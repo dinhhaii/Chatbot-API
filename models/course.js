@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const courseSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
+  _idSubject: mongoose.Schema.Types.ObjectId,
+  _idUser: mongoose.Schema.Types.ObjectId,
   name: {
     type: String,
     require: true
@@ -22,15 +24,7 @@ const courseSchema = mongoose.Schema({
     type: String,
     require: true
   },
-  languages: {
-    type: Array,
-    require: true
-  },
-  difficulty: {
-    type: String,
-    require: true
-  },
-  available: {
+  accessibleDays: {
     type: Number,
     require: true
   },
@@ -42,4 +36,4 @@ const courseSchema = mongoose.Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model('course', userSchema);
+module.exports = mongoose.model('course', courseSchema);

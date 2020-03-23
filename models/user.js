@@ -34,11 +34,11 @@ const userSchema = mongoose.Schema({
   },
   status: {
       type: String,
-      require: false
+      require: true
   },
   bio: {
     type: String,
-    require: true
+    require: false
   }
 }, {
   timestamps: true,

@@ -18,6 +18,10 @@ const lessonSchema = mongoose.Schema({
   fileURLs: {
     type: Array,
     require: false
+  },
+  isDelete: {
+    type: Boolean,
+    require: true
   }
 }, {
   timestamps: true,

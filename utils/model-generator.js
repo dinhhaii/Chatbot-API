@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Course = require('../models/courses');
 
 const mongoose = require("mongoose");
 
@@ -37,6 +38,7 @@ module.exports = {
       });
     return user._doc;
   },
+
   toUserObject: user => {
     return {
       _id: user._id,
@@ -50,5 +52,41 @@ module.exports = {
       status: user.status,
       bio: user.bio
     };
+  },
+
+  createCourse: (
+    _idSubject,
+    name,
+    imageURL,
+    description,
+    price,
+    startDate,
+    duration,
+    accessibleDays,
+    status,
+    isDelete
+  ) => {
+    var course = new Course({
+      _id: new mongoose.Types.ObjectId(),
+      _idSubject: _idSubject,
+      name: name,
+      imageURL: imageURL,
+      description: description,
+      price: price,
+      startDate: startDate,
+      duration: duration,
+      accessibleDays: accessibleDays,
+      status: status,
+      isDelete: isDelete
+    });
+    course
+      .save()
+      .then(result => {
+        return result;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    return course._doc;
   }
 }

@@ -7,6 +7,7 @@ const constant = require('../utils/constant');
 
 let User = require('../models/user');
 
+
 /* POST login. */
 router.post('/login', function (req, res, next) {
     passport.authenticate('local', {session: false}, (err, user, info) => {
@@ -21,19 +22,22 @@ router.post('/login', function (req, res, next) {
                res.send(err);
            }
            // generate a signed json web token with the contents of user object and return it in the response
-           //
-           // const token = jwt.sign(user, constant.JWT_SECRET);
-           // return res.json({user, token});
 
-           var data = modelGenerator.toUserObject(user);
-           data = {
-             ...data,
-             token: jwtExtension.sign(user.toJSON(), constant.JWT_SECRET)
-           };
-           return res.json(data);
+           const token = jwtExtension.sign(user.toJSON(), constant.JWT_SECRET);
+           return res.json({user, token});
         });
     })(req, res);
 });
+
+// Google Sign in
+router.get(
+  '/auth/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email']
+  })
+);
+router.get('/auth/google/redirect', passport.authenticate('google'));
+
 
 // User Registers
 router.post("/register", (req, res) => {
@@ -53,7 +57,7 @@ router.post("/register", (req, res) => {
             hash,
             firstName,
             lastName,
-            'learner',
+            role,
             imgURL,
             'local',
             'active',

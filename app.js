@@ -25,12 +25,13 @@ app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
 
+
 // View engine setup
-app.use(cors());
-app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.session());
+app.use(logger('dev'));
+app.use(cors());
 
 // Router
 app.use('/user', usersRouter);

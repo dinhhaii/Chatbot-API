@@ -3,8 +3,11 @@ const mongoose = require('mongoose');
 const courseSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   _idSubject: mongoose.Schema.Types.ObjectId,
-  _idUser: mongoose.Schema.Types.ObjectId,
   name: {
+    type: String,
+    require: true
+  },
+  imageURL: {
     type: String,
     require: true
   },
@@ -30,6 +33,10 @@ const courseSchema = mongoose.Schema({
   },
   status: {
     type: String,
+    require: false
+  },
+  isDelete: {
+    type: Boolean,
     require: true
   }
 }, {

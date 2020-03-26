@@ -6,10 +6,12 @@ const jwtExtension = require('jsonwebtoken');
 const passport = require('passport');
 const passportJWT = require("passport-jwt");
 const passportLocal = require('passport-local');
+const passportGoogle = require('passport-google-oauth20');
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const LocalStrategy = passportLocal.Strategy;
+let GoogleStrategy = passportGoogle.Strategy;
 
 const User = require('../models/user');
 
@@ -26,7 +28,6 @@ const jwt = new JWTStrategy({
         secretOrKey   : constant.JWT_SECRET
     },
     function (jwtPayload, cb) {
-
         //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.
         return User.findOneById(jwtPayload._id)
             .then(user => {
@@ -38,6 +39,7 @@ const jwt = new JWTStrategy({
     }
 )
 
+// LOCAL
 const local = new LocalStrategy({
         usernameField: 'email',
         passwordField: 'password'
@@ -62,5 +64,18 @@ const local = new LocalStrategy({
     }
 )
 
+//  GOOGLE
+const google = new GoogleStrategy(
+  {
+    clientID: constant.GOOGLE_CLIENT_ID,
+    clientSecret: constant.GOOGLE_CLIENT_SECRET,
+    callbackURL: '/auth/google/redirect'
+  },
+  function (accessToken, refreshToken, tokenInfo, profile, done) {
+        
+    }
+);
+
 passport.use(jwt);
 passport.use(local);
+passport.use(google);

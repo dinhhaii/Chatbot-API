@@ -12,8 +12,8 @@ const feedbackSchema = mongoose.Schema({
     type: Number,
     require: true
   },
-  createdDate: {
-    type: Date,
+  isDelete: {
+    type: Boolean,
     require: true
   }
 }, {

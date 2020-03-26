@@ -8,8 +8,8 @@ const commentSchema = mongoose.Schema({
     type: String,
     require: true
   },
-  createdDate: {
-    type: Date,
+  isDelete: {
+    type: Boolean,
     require: true
   }
 }, {

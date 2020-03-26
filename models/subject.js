@@ -5,6 +5,10 @@ const subjectSchema = mongoose.Schema({
   name: {
     type: String,
     require: true
+  },
+  isDelete: {
+    type: Boolean,
+    require: true
   }
 }, {
   timestamps: true,

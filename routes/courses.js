@@ -5,9 +5,11 @@ const constant = require('../utils/constant');
 let Course = require('../models/course');
 let User = require('../models/user');
 let Invoice = require('../models/invoice');
+let Lesson = require('../models/lesson');
+let Feedback = require('../models/feedback');
 
 // Get All Courses
-router.get('/all-courses', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     let list = await Course.find();
     res.json(list);
@@ -16,19 +18,37 @@ router.get('/all-courses', async (req, res) => {
   }
 });
 
-// Get A Certain Courses
-router.get('/course/:id', async (req, res) => {
+// Get A Certain Courses + Course's Lessons
+router.get('/:id', async (req, res) => {
   try {
     const id = req.params;
     let course = await Course.findById(id);
-    return course;
+
+    if (course) {
+      let lessons = await Lesson.find({ _idCourse: id });
+      let feedback = await Feedback.find({ _idCourse: id });
+
+      if (lessons) {
+        let result = {
+          course: { ...course._doc },
+          lessons: { ...lessons._doc },
+          feedback: { ...feedback._doc}
+        }
+
+        res.json(result);
+      } else {
+        res.json(null);
+      }
+    } else {
+      res.json(null);
+    }
   } catch (e) {
     res.status(400).json('Error: ' + e);
   }
 });
 
-// Get Learner's Enrolled Courses
-router.get('/my-courses', async (req, res) => {
+// Get Learner's Enrolled Courses (Invoice included)
+router.get('/enrolled', async (req, res) => {
   try {
     let studentID = req.body._idStudent;
     let listCourses = [];
@@ -54,12 +74,13 @@ router.get('/my-courses', async (req, res) => {
   }
 });
 
+
 // Create Course
 router.post('/create', async (req, res) => {
   let { _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays } = res.body;
 
   try {
-    let course = modelGenerator.createCourse(
+    let course = await modelGenerator.createCourse(
       _idSubject,
       name,
       imageURL,
@@ -77,7 +98,7 @@ router.post('/create', async (req, res) => {
   };
 });
 
-// Update Course
+// Update + Delete a Course
 router.post('/update', async (req, res) => {
   const course = await Course.findOne({ _id: req.body._idCourse });
 

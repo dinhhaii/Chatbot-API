@@ -19,6 +19,10 @@ const invoiceSchema = mongoose.Schema({
   reportMsg: {
     type: String,
     require: false
+  },
+  isDelete: {
+    type: Boolean,
+    require: true
   }
 }, {
   timestamps: true,

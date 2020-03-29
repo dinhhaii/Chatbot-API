@@ -3,47 +3,52 @@ const modelGenerator = require('../utils/model-generator');
 const constant = require('../utils/constant');
 
 let Course = require('../models/course');
-let Discount = require('../models/discount');
+let Lesson = require('../models/lesson');
 
-// Get All Discount
+
+// Get All Lessons
 router.get('/', async (req, res) => {
   try {
-    let list = await Discount.find();
+    let list = await Lesson.find();
     res.json(list);
   } catch(e) {
     res.status(400).json('Error: ' + e);
   }
 });
 
-// Create Discount
+
+// Create a Lesson
 router.post('/create', async (req, res) => {
-  let { _idCourse, code, percentage, status } = req.body;
+  let { _idCourse, name, description, lectureURL, fileURLs } = req.body;
 
   try {
-    let discount = await modelGenerator.createDiscount(
+    let lesson = await modelGenerator.createLesson(
       _idCourse,
-      code,
-      percentage,
-      status,
+      name,
+      description,
+      lectureURL,
+      fileURLs,
       false
     );
-    res.json(discount);
+
+    res.json(lesson);
+
   } catch(e) {
     res.status(400).json("Error: " + e);
   };
 });
 
-// Update + Delete Discount
+// Update + Delete a Lesson
 router.post('/update', async (req, res) => {
-  const discount = await Discount.findOne({ _id: req.body._idDiscount });
+  const lesson = await Lesson.findOne({ _id: req.body._idLesson });
 
-  if (discount)
+  if (lesson)
   {
     for (let key in req.body)
     {
-      discount[key] = req.body[key];
+      lesson[key] = req.body[key];
     }
-    discount
+    lesson
       .save()
       .then(result => res.json(result))
       .catch (err => console.log(err));
@@ -52,4 +57,5 @@ router.post('/update', async (req, res) => {
   }
 });
 
-module.exports = router
+
+module.exports = router;

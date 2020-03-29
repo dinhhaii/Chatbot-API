@@ -21,18 +21,19 @@ router.get('/', async (req, res) => {
 // Get A Certain Courses + Course's Lessons
 router.get('/:id', async (req, res) => {
   try {
-    const id = req.params;
+    const { id } = req.params;
+
     let course = await Course.findById(id);
 
     if (course) {
-      let lessons = await Lesson.find({ _idCourse: id });
-      let feedback = await Feedback.find({ _idCourse: id });
+      let lessons = await Lesson.find({_idCourse: id});
+      let feedback = await Feedback.find({_idCourse: id});
 
       if (lessons) {
         let result = {
           course: { ...course._doc },
-          lessons: { ...lessons._doc },
-          feedback: { ...feedback._doc}
+          lessons: lessons,
+          feedback: feedback
         }
 
         res.json(result);
@@ -48,12 +49,12 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get Learner's Enrolled Courses (Invoice included)
-router.get('/enrolled', async (req, res) => {
+router.get('/:id/enrolled', async (req, res) => {
   try {
-    let studentID = req.body._idStudent;
+    let studentID = req.params.id;
     let listCourses = [];
 
-    let invoices = await Invoice.findById(studentID);
+    let invoices = await Invoice.find({_idUser: studentID});
     if (invoices)
     {
       for(let invoice of invoices)
@@ -77,7 +78,7 @@ router.get('/enrolled', async (req, res) => {
 
 // Create Course
 router.post('/create', async (req, res) => {
-  let { _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays } = res.body;
+  let { _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays } = req.body;
 
   try {
     let course = await modelGenerator.createCourse(

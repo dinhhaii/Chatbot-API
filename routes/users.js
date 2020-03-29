@@ -7,6 +7,15 @@ const constant = require('../utils/constant');
 
 let User = require('../models/user');
 
+// Get all users
+router.get("/", async (req, res) => {
+  try {
+    let list = await User.find();
+    res.json(list);
+  } catch (e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
 
 /* POST login. */
 router.post('/login', function (req, res, next) {
@@ -41,7 +50,7 @@ router.get('/auth/google/redirect', passport.authenticate('google'));
 
 // User Registers
 router.post("/register", (req, res) => {
-  var { email, password, firstName, lastName } = req.body;
+  var { email, password, firstName, lastName, role } = req.body;
   var imgURL = `sample`;
   const saltRounds = 10;
   User.findOne({ email: email, type: "local" }).then(user => {
@@ -73,15 +82,34 @@ router.post("/register", (req, res) => {
   });
 });
 
+// Update User info
+router.post('/update', async (req, res) => {
+  var { _idUser, password, type } = req.body;
+  const saltRounds = 10;
+  var user = await User.findById({ _id: _idUser });
 
-// Get all users
-router.get("/", async (req, res) => {
-  try {
-    let list = await User.find();
-    res.json(list);
-  } catch (e) {
-    res.status(400).json('Error: ' + e);
+  if (user) {
+    for (var key in req.body) {
+      if (user[key] === req.body[key]||(key==="password")) continue;
+      user[key] = req.body[key];
+    }
+    if (password === "" || type === "facebook" || type === "google") {
+      user
+        .save()
+        .then(result => res.json(result))
+        .catch(err => console.log(err));
+    } else if (user.password !== req.body.password && req.body.password) {
+      var hash = await bcrypt.hash(password, saltRounds);
+      user.password = hash;
+    }
+    user
+        .save()
+        .then(result => {
+          res.json(result);
+        })
+        .catch(err => console.log(err));
   }
 });
+
 
 module.exports = router;

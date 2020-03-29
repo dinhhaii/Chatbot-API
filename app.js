@@ -2,9 +2,18 @@ const express = require ('express');
 const cors = require('cors');
 const logger = require('morgan');
 const mongoose = require('mongoose');
-const usersRouter = require('./routes/users');
 const passport = require('passport');
 const constant = require('./utils/constant');
+
+
+const usersRouter = require('./routes/users');
+const coursesRouter = require('./routes/courses');
+const commentsRouter = require('./routes/comments');
+const feedbackRouter = require('./routes/feedback');
+const lessonsRouter = require('./routes/lessons');
+const discountRouter = require('./routes/discount');
+const invoicesRouter = require('./routes/invoices');
+const subjectsRouter = require('./routes/subjects');
 
 require('dotenv').config();
 const app = express();
@@ -35,6 +44,13 @@ app.use(cors());
 
 // Router
 app.use('/user', usersRouter);
+app.use('/course', coursesRouter);
+app.use('/lesson', lessonsRouter);
+app.use('/invoice', invoicesRouter);
+app.use('/subject', subjectsRouter);
+app.use('/discount', discountRouter);
+app.use('/feedback', feedbackRouter);
+app.use('/comment', commentsRouter);
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -51,3 +67,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+module.exports = app;

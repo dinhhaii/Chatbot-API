@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const Course = require('../models/courses');
+const Course = require('../models/course');
 const Feedback = require('../models/feedback');
 const Subject = require('../models/subject');
 const Discount = require('../models/discount');
@@ -163,7 +163,7 @@ module.exports = {
     content,
     isDelete
   ) => {
-    var comment = new Feedback({
+    var comment = new Comment({
       _id: new mongoose.Types.ObjectId(),
       _idUser: _idUser,
       _idLesson: _idLesson,

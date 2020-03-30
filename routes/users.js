@@ -4,6 +4,7 @@ const modelGenerator = require('../utils/model-generator');
 const jwtExtension = require('jsonwebtoken');
 const passport = require('passport');
 const constant = require('../utils/constant');
+const nodemailer = require("nodemailer");
 
 let User = require('../models/user');
 
@@ -51,7 +52,7 @@ router.get('/auth/google/redirect', passport.authenticate('google'));
 // User Registers
 router.post("/register", (req, res) => {
   var { email, password, firstName, lastName, role } = req.body;
-  var imgURL = `sample`;
+  var imgURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
   const saltRounds = 10;
   User.findOne({ email: email, type: "local" }).then(user => {
 
@@ -69,7 +70,7 @@ router.post("/register", (req, res) => {
             role,
             imgURL,
             'local',
-            'active',
+            'unverified',
             null
           );
           const objectUser = modelGenerator.toUserObject(user);
@@ -81,6 +82,45 @@ router.post("/register", (req, res) => {
     }
   });
 });
+
+// Send Email
+router.post('/verify', async (req, res) => {
+  const { _idUser, email } = req.body
+
+  try {
+    const token = jwtExtension
+        .sign(JSON.stringify({ _id: _idUser }), constant.EMAIL_SECRET)
+    const url = `${req.protocol}://${req.get("host")}/verification/${token}`;
+
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: constant.USERNAME_EMAIL,
+        pass: constant.PASSWORD_EMAIL
+      }
+    });
+
+    var mailOptions = {
+      from: constant.USERNAME_EMAIL,
+      to: email,
+      subject: '[CAFOCC] - ACCOUNT VERIFICATION',
+      html: `Please click the link to confirm: <a href="${url}">${url}</a>
+        <p>The link will be expired in 24h.</p>`
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+        res.json({message: "Email was sent! Please open the verification link in your email! (Check Spam section if you can't find it)"});
+      }
+    });
+  } catch(e) {
+    res.json(error);
+  };
+});
+
 
 // Update User info
 router.post('/update', async (req, res) => {

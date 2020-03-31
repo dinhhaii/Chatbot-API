@@ -40,7 +40,7 @@ router.post('/login', function (req, res, next) {
 });
 
 // Google Sign in
-router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email']}));
+router.get('/google', passport.authenticate('google', {scope:['profile', 'email']}));
 
 router.get("/google/redirect", (req, res, next) => {
   passport.authenticate(
@@ -48,7 +48,7 @@ router.get("/google/redirect", (req, res, next) => {
     { failureRedirect: "/login" },
     (error, user) => {
       if (user) {
-
+        console.log(user);
         req.login(user, { session: false }, err => {
           const query = {...user, _id: user._id.toString()};
           if (err) {
@@ -66,7 +66,6 @@ router.get("/google/redirect", (req, res, next) => {
     }
   )(req, res);
 });
-
 
 // User Registers
 router.post("/register", (req, res) => {

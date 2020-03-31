@@ -69,15 +69,40 @@ const google = new GoogleStrategy(
   {
     clientID: constant.GOOGLE_CLIENT_ID,
     clientSecret: constant.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/redirect'
+    callbackURL: '/user/google/redirect'
   },
   function(accessToken, refreshToken, profile, cb) {
-    console.log(accessToken);
-    console.log(refreshToken);
-    console.log(profile);
-    console.log(cb);
-  }
+    let { emails, name, photos } = profile
 
+    User.findOne({ email: emails[0].value, type: "google" })
+            .then(user => {
+                if(user) {
+                    let _user = modelGenerator.toUserObject(user);
+                    _user = { ..._user, token: jwtExtension.sign(JSON.stringify(_user), constant.JWT_SECRET) }
+                    return done(null, _user);
+                }
+                else {
+                    let _user = modelGenerator
+                      .createUser(
+                        emails[0].value,
+                        "",
+                        name.givenName,
+                        name.familyName,
+                        null,
+                        photos[0].value,
+                        'google',
+                        'unverified',
+                        null
+                      );
+                    _user = { ..._user, token: jwtExtension.sign(JSON.stringify(_user), constant.JWT_SECRET) }
+                    console.log(_user);
+                    return done(null, _user);
+                }
+            })
+            .catch(err => {
+                return done(err);
+            });
+  }
 );
 
 passport.use(jwt);

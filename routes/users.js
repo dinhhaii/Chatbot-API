@@ -40,13 +40,32 @@ router.post('/login', function (req, res, next) {
 });
 
 // Google Sign in
-router.get(
-  '/auth/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email']
-  })
-);
-router.get('/auth/google/redirect', passport.authenticate('google'));
+router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email']}));
+
+router.get("/google/redirect", (req, res, next) => {
+  passport.authenticate(
+    "google",
+    { failureRedirect: "/login" },
+    (error, user) => {
+      if (user) {
+
+        req.login(user, { session: false }, err => {
+          const query = {...user, _id: user._id.toString()};
+          if (err) {
+            res.send(err);
+          }
+          const redirectURL = url.format({
+            pathname: `${constant.URL_CLIENT}/login`,
+            query: query
+          });
+          res.redirect(redirectURL);
+        });
+      } else {
+        return res.json({ message: "Error occured", error });
+      }
+    }
+  )(req, res);
+});
 
 
 // User Registers

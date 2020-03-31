@@ -6,4 +6,6 @@ module.exports = {
     USERNAME_EMAIL: 'dhtc.kltn@gmail.com',
     PASSWORD_EMAIL: 'HaiTom!1',
     EMAIL_SECRET: "email_secret",
+    URL_CLIENT: "http://localhost:3000",
+    // "https://git.heroku.com/cafocc.git"
 }

@@ -71,9 +71,13 @@ const google = new GoogleStrategy(
     clientSecret: constant.GOOGLE_CLIENT_SECRET,
     callbackURL: '/auth/google/redirect'
   },
-  function (accessToken, refreshToken, tokenInfo, profile, done) {
-        
-    }
+  function(accessToken, refreshToken, profile, cb) {
+    console.log(accessToken);
+    console.log(refreshToken);
+    console.log(profile);
+    console.log(cb);
+  }
+
 );
 
 passport.use(jwt);

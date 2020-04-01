@@ -7,11 +7,13 @@ const passport = require('passport');
 const passportJWT = require("passport-jwt");
 const passportLocal = require('passport-local');
 const passportGoogle = require('passport-google-oauth20');
+const passportFacebook = require('passport-facebook');
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const LocalStrategy = passportLocal.Strategy;
-let GoogleStrategy = passportGoogle.Strategy;
+const GoogleStrategy = passportGoogle.Strategy;
+const FacebookStrategy = passportFacebook.Strategy;
 
 const User = require('../models/user');
 
@@ -91,7 +93,7 @@ const google = new GoogleStrategy(
                         null,
                         photos[0].value,
                         'google',
-                        'unverified',
+                        'verified',
                         null
                       );
                     _user = { ..._user, token: jwtExtension.sign(JSON.stringify(_user), constant.JWT_SECRET) }
@@ -105,6 +107,27 @@ const google = new GoogleStrategy(
   }
 );
 
+// FACEBOOK
+const facebook = new FacebookStrategy(
+  {
+    clientID: constant.FACEBOOK_CLIENT_ID,
+    clientSecret: constant.FACEBOOK_CLIENT_SECRET,
+    callbackURL: '/user/facebook/redirect',
+    profileFields: ['id', 'displayName', 'first_name', 'last_name', 'photos', 'email'],
+    enableProof: true, // For security
+    passReqToCallback: true // Pass request from route
+  },
+  function(accessToken, refreshToken, profile, user, done) {
+    console.log("Access Token:" + accessToken);
+    console.log("Refresh Toeken: " + refreshToken);
+    console.log("profile: " + profile);
+
+    console.log("User: " + JSON.stringify(user));
+
+  }
+);
+
 passport.use(jwt);
 passport.use(local);
 passport.use(google);
+passport.use(facebook);

@@ -48,7 +48,7 @@ router.get("/google/redirect", (req, res, next) => {
     { failureRedirect: "/login" },
     (error, user) => {
       if (user) {
-        console.log(user);
+
         req.login(user, { session: false }, err => {
           const query = {...user, _id: user._id.toString()};
           if (err) {
@@ -65,6 +65,43 @@ router.get("/google/redirect", (req, res, next) => {
       }
     }
   )(req, res);
+});
+
+// Facebook Sign in
+router.get('/facebook', passport.authenticate('facebook', {scope:['email']}));
+
+// router.get('/facebook/redirect',
+//   passport.authenticate('facebook',
+//     { successRedirect: `${constant.URL_CLIENT}`,
+//       failureRedirect: `${constant.URL_CLIENT}` }),
+//   function(req, res) {
+//     res.redirect('/login');
+//   });
+router.get("/facebook/redirect", (req, res, next) => {
+passport.authenticate(
+  "facebook",
+  {
+    successRedirect: `${constant.URL_CLIENT}`,
+    failureRedirect: `${constant.URL_CLIENT}`
+  },
+  (error, user) => {
+    if (user) {
+      req.login(user, { session: false }, err => {
+        const query = {...user, _id: user._id.toString()};
+        if (err) {
+          res.send(err);
+        }
+        const redirectURL = url.format({
+          pathname: `${constant.URL_CLIENT}/login`,
+          query: query
+        });
+        res.redirect(redirectURL);
+      });
+    } else {
+      return res.json({ message: "Error occured", error });
+    }
+  }
+)(req, res);
 });
 
 // User Registers
@@ -123,7 +160,8 @@ router.post('/verify', async (req, res) => {
       to: email,
       subject: '[CAFOCC] - ACCOUNT VERIFICATION',
       html: `Please click the link to confirm: <a href="${url}">${url}</a>
-        <p>The link will be expired in 24h.</p>`
+        <p>The link will be expired in 24h.</p>`,
+      expire: '1d'
     };
 
     transporter.sendMail(mailOptions, function(error, info){

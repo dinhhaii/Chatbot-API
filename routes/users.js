@@ -70,13 +70,6 @@ router.get("/google/redirect", (req, res, next) => {
 // Facebook Sign in
 router.get('/facebook', passport.authenticate('facebook', {scope:['email']}));
 
-// router.get('/facebook/redirect',
-//   passport.authenticate('facebook',
-//     { successRedirect: `${constant.URL_CLIENT}`,
-//       failureRedirect: `${constant.URL_CLIENT}` }),
-//   function(req, res) {
-//     res.redirect('/login');
-//   });
 router.get("/facebook/redirect", (req, res, next) => {
 passport.authenticate(
   "facebook",
@@ -136,6 +129,12 @@ router.post("/register", (req, res) => {
         });
     }
   });
+});
+
+// Log Out
+router.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
 });
 
 // Send Email

@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const constant = require('./utils/constant');
 
-
+const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const coursesRouter = require('./routes/courses');
 const commentsRouter = require('./routes/comments');
@@ -43,6 +43,7 @@ app.use(logger('dev'));
 app.use(cors());
 
 // Router
+app.use('/', indexRouter);
 app.use('/user', usersRouter);
 app.use('/course', coursesRouter);
 app.use('/lesson', lessonsRouter);

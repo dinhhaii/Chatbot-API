@@ -5,6 +5,7 @@ const jwtExtension = require('jsonwebtoken');
 const passport = require('passport');
 const constant = require('../utils/constant');
 const nodemailer = require("nodemailer");
+const passwordGenerator = require('generate-password');
 
 let User = require('../models/user');
 
@@ -129,6 +130,51 @@ router.post("/register", (req, res) => {
         });
     }
   });
+});
+
+// Forgot Password
+router.post('/forgotPassword', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    let saltRound = 10;
+    let user = User.findOne({email, type: 'local'});
+    let randPassword = passwordGenerator.generate({
+      length: 8,
+      uppercase: false,
+      numbers: true
+    });
+    let hashPassword = await bcrypt.hash(randPassword, saltRounds);
+    if (user) {
+      user.password = hashPassword;
+    }
+
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: constant.USERNAME_EMAIL,
+        pass: constant.PASSWORD_EMAIL
+      }
+    });
+    var mainOptions = {
+      from: constant.USERNAME_EMAIL,
+      to: email,
+      subject: '[CAFOCC] - ACCOUNT VERIFICATION',
+      html: `<p>Here is your new password: <strong>${randPassword}</strong></p>
+            <p>Please change this password as soon as you sign in into the app</p>`
+    };
+    transporter.sendMail(mainOptions, function(error, info) {
+      if (e) {
+        res.json(e);
+      } else {
+        console.log("Email sent: " + info.response);
+        user.save().catch(err => console.log(err));
+        res.json({ message: "Email was sent! Open your mail to receive new password (Please check you Spam Mailbox section as well!)" });
+      }
+    });
+  } catch(e) {
+    res.json(e);
+  }
 });
 
 // Log Out

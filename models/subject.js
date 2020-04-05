@@ -6,6 +6,10 @@ const subjectSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  imageURL: {
+    type: String,
+    require: true
+  },
   isDelete: {
     type: Boolean,
     require: true

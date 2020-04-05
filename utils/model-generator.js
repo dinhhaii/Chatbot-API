@@ -46,6 +46,7 @@ module.exports = {
   },
 
   createCourse: (
+    _idLecturer,
     _idSubject,
     name,
     imageURL,
@@ -59,6 +60,7 @@ module.exports = {
   ) => {
     var course = new Course({
       _id: new mongoose.Types.ObjectId(),
+      _idLecturer: _idLecturer,
       _idSubject: _idSubject,
       name: name,
       imageURL: imageURL,
@@ -240,6 +242,7 @@ module.exports = {
   toCourseObject: course => {
     return {
       _id: course._id,
+      _idLecturer: course._idLecturer,
       _idSubject: course._idSubject,
       name: course.name,
       imageURL: course.imageURL,

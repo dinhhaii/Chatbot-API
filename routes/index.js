@@ -4,11 +4,13 @@ var router = express.Router();
 const jwt = require('jsonwebtoken');
 const modelGenerator = require('../utils/model-generator');
 const constant = require('../utils/constant');
+
 const User = require('../models/user');
 
 /* GET user profile. */
-router.get('/profile', passport.authenticate('jwt', {session: false}), function(req, res, next) {
+router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res) => {
   const authInfo = req.authInfo;
+  console.log(req);
   if(authInfo) {
     var data = modelGenerator.toUserObject(req.authInfo);
     data = { ...data, token: jwt.sign(JSON.stringify(data), constant.JWT_SECRET)};
@@ -28,7 +30,7 @@ router.get("/verification/:token", async (req, res) => {
     if (user) {
       user.status = 'verified';
       user.save().catch(err => console.log(err));
-      res.redirect(`${constant.URL_CLIENT}/logout`);
+      res.redirect(`${constant.URL_CLIENT}/user/logout`);
     }
   }
   res.json(decoded);

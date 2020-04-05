@@ -28,10 +28,12 @@ router.get('/:id', async (req, res) => {
     if (course) {
       let lessons = await Lesson.find({_idCourse: id});
       let feedback = await Feedback.find({_idCourse: id});
+      let lecturer = await User.findById(course._idLecturer);
 
       if (lessons) {
         let result = {
-          course: { ...course._doc },
+          ...course._doc,
+          lecturer: lecturer,
           lessons: lessons,
           feedback: feedback
         }
@@ -78,10 +80,14 @@ router.get('/:id/enrolled', async (req, res) => {
 
 // Create Course
 router.post('/create', async (req, res) => {
-  let { _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays } = req.body;
-
+  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays } = req.body;
+  if (!imageURL)
+  {
+    imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
+  }
   try {
     let course = await modelGenerator.createCourse(
+      _idLecturer,
       _idSubject,
       name,
       imageURL,

@@ -18,7 +18,10 @@ router.get("/", async (req, res) => {
 // Create a Subject
 router.post("/create", async (req, res) => {
   let { name, imageURL } = req.body;
-
+  if (!imageURL)
+  {
+    imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
+  }
   try {
     let subject = await modelGenerator.createSubject(
       name,

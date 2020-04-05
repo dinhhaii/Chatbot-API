@@ -10,11 +10,10 @@ const User = require('../models/user');
 /* GET user profile. */
 router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res) => {
   const authInfo = req.authInfo;
-  console.log(req);
   if(authInfo) {
     var data = modelGenerator.toUserObject(req.authInfo);
     data = { ...data, token: jwt.sign(JSON.stringify(data), constant.JWT_SECRET)};
-    res.json(data);
+    res.json(req.authInfo);
   }
   else {
     res.json(null);

@@ -7,6 +7,7 @@ let User = require('../models/user');
 let Invoice = require('../models/invoice');
 let Lesson = require('../models/lesson');
 let Feedback = require('../models/feedback');
+let Subject = require('../models/subject');
 
 // Get All Courses
 router.get('/', async (req, res) => {
@@ -29,10 +30,12 @@ router.get('/:id', async (req, res) => {
       let lessons = await Lesson.find({_idCourse: id});
       let feedback = await Feedback.find({_idCourse: id});
       let lecturer = await User.findById(course._idLecturer);
+      let subject = await Subject.findById(course._idSubject);
 
       if (lessons) {
         let result = {
           ...course._doc,
+          subject: subject,
           lecturer: lecturer,
           lessons: lessons,
           feedback: feedback

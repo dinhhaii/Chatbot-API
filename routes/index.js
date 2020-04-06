@@ -30,15 +30,15 @@ router.get("/verification/:token", async (req, res, next) => {
   const { token } = req.params;
 
   try {
-    const decoded = jwt.verify(token, constant.EMAIL_SECRET);
+    const decoded = jwt.verify(token, constant.JWT_SECRET);
 
     if (decoded._id) {
       let user = await User.findById(decoded._id);
       if (user) {
         user.status = 'verified';
-        user.save().catch(err => console.log(err));
-
-        res.redirect(`${constant.URL_CLIENT}/user/login`);
+        const data = await user.save();
+        // res.json(data);
+        res.redirect(`${constant.URL_CLIENT}/logout`);
       }
     }
     res.json(decoded);

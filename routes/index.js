@@ -31,17 +31,17 @@ router.get("/verification/:token", async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, constant.JWT_SECRET);
-
     if (decoded._id) {
       let user = await User.findById(decoded._id);
-      if (user) {
-        user.status = 'verified';
-        const data = await user.save();
-        // res.json(data);
-        res.redirect(`${constant.URL_CLIENT}/logout`);
-      }
-    }
-    res.json(decoded);
+       if (user) {
+         user.status = 'verified';
+         const data = await user.save();
+         res.json(data);
+         
+         res.redirect(`${constant.URL_CLIENT}/logout`);
+       }
+     }
+     res.json(decoded);
   } catch(e) {
     next(e);
   }

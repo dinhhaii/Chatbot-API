@@ -22,15 +22,22 @@ router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res
 
 router.get("/verification/:token", async (req, res) => {
   const { token } = req.params;
-  const decoded = jwt.verify(token, constant.JWT_SECRET);
 
-  if (decoded._id) {
-    let user = await User.findById(decoded._id);
-    if (user) {
-      user.status = 'verified';
-      user.save().catch(error => console.log(error));
-      res.redirect(`${constant.URL_CLIENT}/logout`);
-    }
+  try {
+    const decoded = jwt.verify(token, constant.JWT_SECRET);
+    if (decoded._id) {
+      let user = await User.findById(decoded._id);
+       if (user) { 
+         user.status = 'verified';
+         const data = await user.save();
+         res.json(data);
+         
+         res.redirect(`${constant.URL_CLIENT}/logout`);
+       }
+     }
+     res.json(decoded);
+  } catch(e) {
+    next(e);
   }
   res.json(decoded);
 });

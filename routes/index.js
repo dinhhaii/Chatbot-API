@@ -7,6 +7,12 @@ const constant = require('../utils/constant');
 
 const User = require('../models/user');
 
+
+// GET Main
+router.get('/', () => {
+  res.redirect(`${constant.URL_CLIENT}`);
+});
+
 /* GET user profile. */
 router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res) => {
   const authInfo = req.authInfo;
@@ -20,19 +26,25 @@ router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res
   }
 });
 
-router.get("/verification/:token", async (req, res) => {
+router.get("/verification/:token", async (req, res, next) => {
   const { token } = req.params;
-  const decoded = jwt.verify(token, constant.EMAIL_SECRET);
 
-  if (decoded._id) {
-    let user = await User.findById(decoded._id);
-    if (user) {
-      user.status = 'verified';
-      user.save().catch(err => console.log(err));
-      res.redirect(`${constant.URL_CLIENT}/user/logout`);
+  try {
+    const decoded = jwt.verify(token, constant.EMAIL_SECRET);
+
+    if (decoded._id) {
+      let user = await User.findById(decoded._id);
+      if (user) {
+        user.status = 'verified';
+        user.save().catch(err => console.log(err));
+
+        res.redirect(`${constant.URL_CLIENT}/user/login`);
+      }
     }
+    res.json(decoded);
+  } catch(e) {
+    next(e);
   }
-  res.json(decoded);
 });
 
 module.exports = router;

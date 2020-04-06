@@ -184,11 +184,11 @@ router.get('/logout', function(req, res){
 
 // Send Email
 router.post('/verify', async (req, res) => {
-  const { _idUser, email } = req.body
+  const { _id, email } = req.body
 
   try {
     const token = jwtExtension
-        .sign(JSON.stringify({ _id: _idUser }), constant.EMAIL_SECRET)
+        .sign(JSON.stringify({ _id }), constant.EMAIL_SECRET)
     const url = `${req.protocol}://${req.get("host")}/verification/${token}`;
 
     var transporter = nodemailer.createTransport({

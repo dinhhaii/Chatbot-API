@@ -1,4 +1,5 @@
 const express = require ('express');
+const path = require('path');
 const cors = require('cors');
 const logger = require('morgan');
 const mongoose = require('mongoose');
@@ -38,8 +39,10 @@ app.listen(port, () => {
 // View engine setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 app.use(passport.session());
 app.use(logger('dev'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 // Router

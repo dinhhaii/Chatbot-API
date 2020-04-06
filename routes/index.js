@@ -28,8 +28,7 @@ router.get("/verification/:token", async (req, res) => {
     let user = await User.findById(decoded._id);
     if (user) {
       user.status = 'verified';
-      const data = await user.save();
-      // res.json(data);
+      user.save().catch(error => console.log(error));
       res.redirect(`${constant.URL_CLIENT}/logout`);
     }
   }

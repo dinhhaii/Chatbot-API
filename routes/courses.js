@@ -60,15 +60,23 @@ router.get('/:id/enrolled', async (req, res) => {
     let listCourses = [];
 
     let invoices = await Invoice.find({_idUser: studentID});
+
+
     if (invoices)
     {
       for(let invoice of invoices)
       {
-        let course = await Course.findById(invoice._idCourse);
+        var course = await Course.findById(invoice._idCourse);
+        let lecturer = await User.findById(course._idLecturer);
+
+        course = {
+          ...course._doc,
+          lecturer
+        };
 
         const resultItem = {
           invoice: { ...invoice._doc },
-          course: { ...course._doc }
+          course: course
         }
 
         listCourses.push(resultItem);

@@ -32,8 +32,6 @@ router.get("/verification/:token", async (req, res) => {
        if (user) {
          user.status = 'verified';
          const data = await user.save();
-         res.json(data);
-
          res.redirect(`${constant.URL_CLIENT}/logout`);
        }
      }

@@ -1,5 +1,6 @@
 var express = require('express');
 const passport = require('passport');
+const bcrypt = require("bcrypt");
 var router = express.Router();
 const jwt = require('jsonwebtoken');
 const modelGenerator = require('../utils/model-generator');
@@ -20,6 +21,7 @@ router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res
   }
 });
 
+// Verification
 router.get("/verification/:token", async (req, res) => {
   const { token } = req.params;
 
@@ -27,11 +29,11 @@ router.get("/verification/:token", async (req, res) => {
     const decoded = jwt.verify(token, constant.JWT_SECRET);
     if (decoded._id) {
       let user = await User.findById(decoded._id);
-       if (user) { 
+       if (user) {
          user.status = 'verified';
          const data = await user.save();
          res.json(data);
-         
+
          res.redirect(`${constant.URL_CLIENT}/logout`);
        }
      }
@@ -40,6 +42,21 @@ router.get("/verification/:token", async (req, res) => {
     next(e);
   }
   res.json(decoded);
+});
+
+// Hash Password
+router.post('/hashed-password', async (req, res) => {
+  let { password } = req.body;
+
+  try {
+    let saltRounds = 10;
+
+    var hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    res.json(hashedPassword);
+  } catch(e) {
+    res.json(e);
+  };
 });
 
 module.exports = router;

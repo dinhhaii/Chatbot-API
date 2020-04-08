@@ -84,6 +84,7 @@ router.post('/lecturer', async (req, res) => {
 
           invoice = {
             ...invoice._doc,
+            course: course,
             subject: subject,
             lecturer: lecturer,
             discount: discount,

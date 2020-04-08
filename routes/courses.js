@@ -8,12 +8,35 @@ let Invoice = require('../models/invoice');
 let Lesson = require('../models/lesson');
 let Feedback = require('../models/feedback');
 let Subject = require('../models/subject');
+let Discount = require('../models/discount');
 
 // Get All Courses
 router.get('/', async (req, res) => {
   try {
     let list = await Course.find();
-    res.json(list);
+
+    let result = [];
+
+    for (let obj of list) {
+      let lessons = await Lesson.find({_idCourse: obj['_id']});
+      let feedback = await Feedback.find({_idCourse: obj['_id']});
+      let lecturer = await User.findById(obj['_idLecturer']);
+      let subject = await Subject.findById(obj['_idSubject']);
+      let discount = await Discount.find({_idCourse: obj['_id']});
+
+
+      obj = {
+        ...obj._doc,
+        subject: subject,
+        lecturer: lecturer,
+        discount: discount,
+        lessons: lessons,
+        feedback: feedback
+      }
+      result.push(obj);
+    }
+
+    res.json(result);
   } catch(e) {
     res.status(400).json('Error: ' + e);
   }
@@ -31,12 +54,14 @@ router.get('/:id', async (req, res) => {
       let feedback = await Feedback.find({_idCourse: id});
       let lecturer = await User.findById(course._idLecturer);
       let subject = await Subject.findById(course._idSubject);
+      let discount = await Discount.find({_idCourse: id});
 
       if (lessons) {
         let result = {
           ...course._doc,
           subject: subject,
           lecturer: lecturer,
+          discount: discount,
           lessons: lessons,
           feedback: feedback
         }

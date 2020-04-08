@@ -76,6 +76,7 @@ router.post('/lecturer', async (req, res) => {
 
         if (invoice['_idCourse'].toString() === course['_id'].toString())
         {
+          let learner = await User.findById(invoice['_idUser']);
           let lessons = await Lesson.find({_idCourse: course['_id']});
           let feedback = await Feedback.find({_idCourse: course['_id']});
           let lecturer = await User.findById(course['_idLecturer']);
@@ -84,9 +85,10 @@ router.post('/lecturer', async (req, res) => {
 
           invoice = {
             ...invoice._doc,
+            learner: learner,
             course: course,
-            subject: subject,
             lecturer: lecturer,
+            subject: subject,
             discount: discount,
             lessons: lessons,
             feedback: feedback

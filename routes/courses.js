@@ -113,6 +113,37 @@ router.get('/:id/enrolled', async (req, res) => {
   }
 });
 
+// Get All Lecturer's Courses
+router.get('/:id/teaching', async (req, res) => {
+  try {
+    let list = await Course.find({_idLecturer: req.params.id});
+
+    let result = [];
+
+    for (let obj of list) {
+      let lessons = await Lesson.find({_idCourse: obj['_id']});
+      let feedback = await Feedback.find({_idCourse: obj['_id']});
+      let lecturer = await User.findById(obj['_idLecturer']);
+      let subject = await Subject.findById(obj['_idSubject']);
+      let discount = await Discount.find({_idCourse: obj['_id']});
+
+
+      obj = {
+        ...obj._doc,
+        subject: subject,
+        lecturer: lecturer,
+        discount: discount,
+        lessons: lessons,
+        feedback: feedback
+      }
+      result.push(obj);
+    }
+
+    res.json(result);
+  } catch(e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
 
 // Create Course
 router.post('/create', async (req, res) => {

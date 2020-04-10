@@ -15,7 +15,7 @@ const lessonSchema = mongoose.Schema({
     type: String,
     require: true
   },
-  fileURLs: {
+  files: {
     type: Array,
     require: false
   },

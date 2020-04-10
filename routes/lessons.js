@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 
 // Create a Lesson
 router.post('/create', async (req, res) => {
-  let { _idCourse, name, description, lectureURL, fileURLs } = req.body;
+  let { _idCourse, name, description, lectureURL, files } = req.body;
 
   try {
     let lesson = await modelGenerator.createLesson(
@@ -27,7 +27,7 @@ router.post('/create', async (req, res) => {
       name,
       description,
       lectureURL,
-      fileURLs,
+      files,
       false
     );
 

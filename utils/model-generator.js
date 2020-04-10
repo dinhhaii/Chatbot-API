@@ -110,7 +110,7 @@ module.exports = {
     name,
     description,
     lectureURL,
-    fileURLs,
+    files,
     isDelete,
   ) => {
     var lesson = new Lesson({
@@ -119,7 +119,7 @@ module.exports = {
       name: name,
       description: description,
       lectureURL: lectureURL,
-      fileURLs: fileURLs,
+      files: files,
       isDelete: isDelete
     });
     lesson
@@ -278,7 +278,7 @@ module.exports = {
       name: lesson.name,
       description: lesson.description,
       lectureURL: lesson.lectureURL,
-      fileURLs: lesson.fileURLs,
+      files: lesson.files,
       isDelete: lesson.isDelete
     }
   },

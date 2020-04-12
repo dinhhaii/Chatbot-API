@@ -163,7 +163,7 @@ router.post('/create', async (req, res) => {
       startDate,
       duration,
       accessibleDays,
-      null,
+      'pending',
       false
     );
     res.json(course);

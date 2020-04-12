@@ -4,6 +4,8 @@ const constant = require('../utils/constant');
 
 let Course = require('../models/course');
 let Lesson = require('../models/lesson');
+let Comment = require('../models/comment');
+let User = require('../models/user');
 
 
 // Get All Lessons
@@ -54,6 +56,45 @@ router.post('/update', async (req, res) => {
       .catch (err => console.log(err));
   } else {
     res.json(null);
+  }
+});
+
+// Find Lesson by ID
+router.get('/:id', async (req, res) => {
+  let { id } = req.params;
+
+  try {
+    let lesson = await Lesson.findById(id);
+
+    if (lesson) {
+      let course = await Course.findById(lesson['_idCourse']);
+      let comments = await Comment.find({ _idLesson: id });
+
+      let commentsWithUser = [];
+
+      for (let comment of comments) {
+        let learner = await User.findById(comment._idUser);
+
+        comment = {
+          ...comment._doc,
+          user: learner
+        };
+
+        commentsWithUser.push(comment);
+      }
+
+      lesson = {
+        ...lesson._doc,
+        course: course,
+        comments: commentsWithUser
+      };
+
+      res.json(lesson);
+    } else {
+      res.json(null);
+    }
+  } catch(e) {
+    res.json(e);
   }
 });
 

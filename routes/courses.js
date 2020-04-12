@@ -191,4 +191,41 @@ router.post('/update', async (req, res) => {
   }
 });
 
+// Get Course by Lesson ID
+router.get('/lesson/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    let lesson = await Lesson.findById(id);
+
+    if (lesson) {
+      let course = await Course.findById(lesson['_idCourse']);
+      let lessons = await Lesson.find({_idCourse: course._id});
+      let feedback = await Feedback.find({_idCourse: course._id});
+      let lecturer = await User.findById(course['_idLecturer']);
+      let subject = await Subject.findById(course['_idSubject']);
+      let discount = await Discount.find({_idCourse: course._id});
+
+      if (lessons) {
+        course = {
+          ...course._doc,
+          subject: subject,
+          lecturer: lecturer,
+          discount: discount,
+          lessons: lessons,
+          feedback: feedback
+        }
+
+        res.json(course);
+      } else {
+        res.json(null);
+      }
+    } else {
+      res.json(null);
+    }
+  } catch(e) {
+    res.json(e);
+  }
+});
+
 module.exports = router;

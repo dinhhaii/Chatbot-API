@@ -135,42 +135,40 @@ router.post("/register", (req, res) => {
 // Forgot Password
 router.post('/forgotPassword', async (req, res) => {
   const { email } = req.body;
+
   try {
     const saltRounds = 10;
-    const user = await User.findOne({email, type: 'local'});
-    const randPassword = passwordGenerator.generate({
-      length: 8,
-      uppercase: false,
-      numbers: true
+    const token = passwordGenerator.generate({
+      length: 16
     });
-    var hashPassword = await bcrypt.hash(randPassword, saltRounds);
 
-    if (user) {
-      user.password = hashPassword;
-    }
+    const url = `${req.protocol}://${req.get("host")}/verify/${email}/${token}`;
+
     var transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: constant.USERNAME_EMAIL,
         pass: constant.PASSWORD_EMAIL
       }
     });
+
     var mailOptions = {
       from: constant.USERNAME_EMAIL,
       to: email,
-      subject: '[CAFOCC] - RESET PASSWORD',
-      html: `<p>Here is your new password: <strong>${randPassword}</strong></p>`
+      subject: '[CAFOCC] - EMAIL VERIFICATION',
+      html: `Please click the link to confirm: <a href="${url}">${url}</a>
+        <p>The link will be expired in 24h.</p>`,
+      expire: '1d'
     };
-    transporter.sendMail(mailOptions, function(error, info) {
+
+    transporter.sendMail(mailOptions, function(error, info){
       if (error) {
-        res.json(error);
+        console.log(error);
       } else {
-        console.log("Email sent: " + info.response);
-        user.save().catch(err => console.log(err));
-        res.json({ message: "Email was sent! Open your mail to receive new password (Please check you Spam Mailbox section as well!)" });
+        console.log('Email sent: ' + info.response);
+        res.json({message: "Email was sent! Please open the verification link in your email! (Check Spam section if you can't find it)"});
       }
     });
-
   } catch(error) {
     res.json(error);
   }

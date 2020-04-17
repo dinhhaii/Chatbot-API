@@ -9,6 +9,7 @@ let Lesson = require('../models/lesson');
 let Feedback = require('../models/feedback');
 let Subject = require('../models/subject');
 let Discount = require('../models/discount');
+let Comment = require('../models/comment');
 
 // Get All Courses
 router.get('/', async (req, res) => {
@@ -172,7 +173,7 @@ router.post('/create', async (req, res) => {
   };
 });
 
-// Update + Delete a Course
+// Update a Course
 router.post('/update', async (req, res) => {
   const course = await Course.findOne({ _id: req.body._idCourse });
 
@@ -189,6 +190,52 @@ router.post('/update', async (req, res) => {
   } else {
     res.json(null);
   }
+});
+
+// Delete a Course
+router.post('/delete', async (req, res) => {
+  const { _idCourse } = req.body;
+
+  try {
+    const course = await Course.findOne({ _id: _idCourse });
+
+    if (course) {
+
+      course['isDelete'] = true;
+      course
+        .save()
+        .then(async (data) => {
+          if (data) {
+            const lessons = await Lesson.find({_idCourse: _idCourse});
+
+            Lesson.updateMany({"_idCourse": _idCourse}, {"$set": {"isDelete": true}}, {"multi": true}, (err, res) => {
+              if (err) throw err;
+            });
+
+            Feedback.updateMany({"_idCourse": _idCourse}, {"$set": {"isDelete": true}}, {"multi": true}, (err, res) => {
+              if (err) throw err;
+            });
+
+            Discount.updateMany({"_idCourse": _idCourse}, {"$set": {"isDelete": true}}, {"multi": true}, (err, res) => {
+              if (err) throw err;
+            });
+
+            for (let lesson of lessons) {
+
+              Comment.updateMany({"_idLesson": lesson._id}, {"$set": {"isDelete": true}}, {"multi": true}, (err, res) => {
+                if (err) throw err;
+              });
+            }
+            res.json({message: 'Course is deleted!'});
+          }
+        })
+    }
+    else {
+      res.json({message: 'Course does not exist'});
+    }
+  } catch (e) {
+    res.json(e);
+  };
 });
 
 // Get Course by Lesson ID

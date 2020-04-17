@@ -19,6 +19,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get all Learners
+router.get('/all-learners', async (req, res) => {
+  try {
+    let list = await User.find({role: 'learner'});
+    res.json(list);
+  } catch(e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
+
+// Get all Lecturers
+router.get('/all-lecturers', async (req, res) => {
+  try {
+    let list = await User.find({role: 'lecturer'});
+    res.json(list);
+  } catch(e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
+
 /* POST login. */
 router.post('/login', function (req, res, next) {
     passport.authenticate('local', {session: false}, (err, user, info) => {
@@ -133,42 +153,50 @@ router.post("/register", (req, res) => {
 });
 
 // Forgot Password
-router.post('/forgotPassword', async (req, res) => {
+router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
+
   try {
-    const saltRounds = 10;
-    const token = passwordGenerator.generate({
-      length: 16
-    });
+    const user = await User.findOne({email, type: 'local'});
 
-    const url = `${req.protocol}://${req.get("host")}/verify/${email}/${token}`;
+    if (user) {
+      const saltRounds = 10;
+      const token = passwordGenerator.generate({
+        length: 16
+      });
 
-    var transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: constant.USERNAME_EMAIL,
-        pass: constant.PASSWORD_EMAIL
-      }
-    });
+      const url = `${req.protocol}://${req.get("host")}/verify/${email}/${token}`;
 
-    var mailOptions = {
-      from: constant.USERNAME_EMAIL,
-      to: email,
-      subject: '[CAFOCC] - EMAIL VERIFICATION',
-      html: `Please click the link to confirm: <a href="${url}">${url}</a>
-        <p>The link will be expired in 24h.</p>`,
-      expire: '1d'
-    };
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: constant.USERNAME_EMAIL,
+          pass: constant.PASSWORD_EMAIL
+        }
+      });
 
-    transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        console.log(error);
-      } else {
-        console.log('Email sent: ' + info.response);
-        res.json({message: "Email was sent! Please open the verification link in your email! (Check Spam section if you can't find it)"});
-      }
-    });
+      var mailOptions = {
+        from: constant.USERNAME_EMAIL,
+        to: email,
+        subject: '[CAFOCC] - EMAIL VERIFICATION',
+        html: `Please click the link to confirm: <a href="${url}">${url}</a>
+          <p>The link will be expired in 24h.</p>`,
+        expire: '1d'
+      };
+
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+          res.json({message: "Email was sent! Please open the verification link in your email! (Check Spam section if you can't find it)"});
+        }
+      });
+    }
+    else {
+      res.json(null);
+    }
   } catch(error) {
     res.json(error);
   }

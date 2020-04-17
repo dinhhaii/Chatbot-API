@@ -36,7 +36,7 @@ router.post("/create", async (req, res) => {
   };
 });
 
-// Update + Delete a Lesson
+// Update Lesson
 router.post('/update', async (req, res) => {
   const subject = await Subject.findOne({ _id: req.body._idSubject });
 

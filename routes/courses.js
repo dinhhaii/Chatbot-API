@@ -79,7 +79,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get Learner's Enrolled Courses (Invoice included)
+// Get Learner's Enrolled Courses (Invoice included) by _idLearner
 router.get('/:id/enrolled', async (req, res) => {
   try {
     let studentID = req.params.id;
@@ -114,7 +114,7 @@ router.get('/:id/enrolled', async (req, res) => {
   }
 });
 
-// Get All Lecturer's Courses
+// Get Lecturer's Courses by _idLecturer
 router.get('/:id/teaching', async (req, res) => {
   try {
     let list = await Course.find({_idLecturer: req.params.id});
@@ -127,15 +127,16 @@ router.get('/:id/teaching', async (req, res) => {
       let lecturer = await User.findById(obj['_idLecturer']);
       let subject = await Subject.findById(obj['_idSubject']);
       let discount = await Discount.find({_idCourse: obj['_id']});
+      let invoices = await Invoice.find({_idCourse: obj['_id']})
 
+      await Promise.all(invoices.map(async (invoice, index) => {
+        const learner = await User.findById({_id: invoice._idUser});
+        invoices[index] = { ...invoice._doc, learner };
+      }))
 
       obj = {
         ...obj._doc,
-        subject: subject,
-        lecturer: lecturer,
-        discount: discount,
-        lessons: lessons,
-        feedback: feedback
+        subject, invoices, lessons, feedback, lecturer, discount
       }
       result.push(obj);
     }

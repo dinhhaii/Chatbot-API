@@ -190,7 +190,10 @@ router.post('/forgot-password', async (req, res) => {
           console.log(error);
         } else {
           console.log('Email sent: ' + info.response);
-          res.json({message: "Email was sent! Please open the verification link in your email! (Check Spam section if you can't find it)"});
+          res.json({
+            message: "Email was sent! Please open the verification link in your email! (Check Spam section if you can't find it)",
+            token: token,
+          });
         }
       });
     }

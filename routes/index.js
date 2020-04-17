@@ -46,9 +46,10 @@ router.get("/verification/:token", async (req, res) => {
 
 // Verification Email to Generate New Password
 router.get("/verify/:email/:token", async (req, res) => {
+  const { token, email } = req.params;
 
   try {
-    res.redirect(`${constant.URL_CLIENT}/reset-password`);
+    res.redirect(`${constant.URL_CLIENT}/auth/reset-password/${email}/${token}`);
   } catch (e) {
     res.json(e);
   }

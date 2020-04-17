@@ -166,7 +166,7 @@ router.post('/forgot-password', async (req, res) => {
         length: 16
       });
 
-      const url = `${req.protocol}://${req.get("host")}/verify/${email}/${token}`;
+      const url = `${req.protocol}://${req.get("host")}/verify/${user._id}/${token}`;
 
       var transporter = nodemailer.createTransport({
         service: 'gmail',

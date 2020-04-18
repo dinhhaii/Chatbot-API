@@ -19,6 +19,17 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get user by id
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    let user = await User.findById(id);
+    res.json(user);
+  } catch (e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
+
 // Get all Learners
 router.get('/all-learners', async (req, res) => {
   try {
@@ -155,16 +166,13 @@ router.post("/register", (req, res) => {
 // Forgot Password
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
-
-
   try {
     const user = await User.findOne({email, type: 'local'});
 
     if (user) {
       const saltRounds = 10;
-      const token = passwordGenerator.generate({
-        length: 16
-      });
+      let token = await bcrypt.hash(`${user.email}-reset`, saltRounds);
+      // token = token.split('/').join('');
 
       const url = `${req.protocol}://${req.get("host")}/verify/${user._id}/${token}`;
 

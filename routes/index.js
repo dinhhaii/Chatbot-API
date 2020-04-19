@@ -48,7 +48,7 @@ router.get("/verification/:token", async (req, res) => {
 router.get("/verify/:id/:token", async (req, res) => {
   const { token, id } = req.params;
   try {
-    res.redirect(`${constant.URL_CLIENT}/auth/reset-password/${id}/confirm=${token}`);
+    res.redirect(`${constant.URL_CLIENT}/auth/reset-password/id=${id}/token=${token}`);
   } catch (e) {
     res.json(e);
   }

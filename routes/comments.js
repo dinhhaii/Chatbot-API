@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const modelGenerator = require('../utils/model-generator');
-const constant = require('../utils/constant');
 
 let Lesson = require('../models/lesson');
 let User = require('../models/user');

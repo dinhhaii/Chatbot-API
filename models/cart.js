@@ -7,10 +7,6 @@ const cartSchema = mongoose.Schema(
     items: {
       type: Array,
       require: true,
-    },
-    favouriteItems: {
-      type: Array,
-      require: true,
     }
   },
   {

@@ -6,6 +6,7 @@ const Discount = require('../models/discount');
 const Lesson = require('../models/lesson');
 const Invoice = require('../models/invoice');
 const Comment = require('../models/comment');
+const Cart = require('../models/cart');
 
 const mongoose = require("mongoose");
 
@@ -239,6 +240,30 @@ module.exports = {
     return discount._doc;
   },
 
+  createCart: (
+    _idUser,
+    items
+  ) => {
+    var cart = new Cart({
+      _id: new mongoose.Types.ObjectId(),
+      _idUser: _idUser,
+      items: items
+    });
+    cart
+      .save()
+      .then(result => {
+        return result;
+      })
+      .catch(err => {
+        console.log(err);
+      })
+    return cart._doc;
+  },
+
+
+// ----------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------------------
   toCourseObject: course => {
     return {
       _id: course._id,
@@ -335,5 +360,13 @@ module.exports = {
       status: discount.status,
       isDelete: discount.isDelete
     }
-  }
+  },
+
+  toCartObject: cart => {
+    return {
+      _id: cart._id,
+      _idUser: cart._idUser,
+      items: cart.items
+    }
+  },
 }

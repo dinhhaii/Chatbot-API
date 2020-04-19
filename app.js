@@ -15,6 +15,7 @@ const lessonsRouter = require('./routes/lessons');
 const discountRouter = require('./routes/discount');
 const invoicesRouter = require('./routes/invoices');
 const subjectsRouter = require('./routes/subjects');
+const cartRouter = require('./routes/cart');
 
 require('dotenv').config();
 const app = express();
@@ -55,6 +56,7 @@ app.use('/subject', subjectsRouter);
 app.use('/discount', discountRouter);
 app.use('/feedback', feedbackRouter);
 app.use('/comment', commentsRouter);
+app.use('/cart', cartRouter);
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {

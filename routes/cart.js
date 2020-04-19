@@ -34,10 +34,11 @@ router.get('/:idUser', async (req, res) => {
       for (let item of cart.items) {
         let course = await Course.findById(item['_idCourse']);
         let discount = await Discount.findById(item['_idDiscount']);
+        let discountList = await Discount.find({ _idCourse: item['_idCourse']});
 
         course = {
-          course,
-          discount
+          course: { ...course._doc, discountList: discountList},
+          discount,
         }
 
         if (course) {
@@ -53,9 +54,9 @@ router.get('/:idUser', async (req, res) => {
 
       res.json(result);
     } else {
-      res.json(null);
+        let cart = await modelGenerator.createCart(_idUser, items);
+        res.json(cart);
     }
-    res.json(cart);
   } catch (e) {
     res.status(400).json('Error: ' + e);
   }

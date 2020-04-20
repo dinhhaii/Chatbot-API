@@ -13,7 +13,27 @@ let Discount = require('../models/discount');
 // Get All Invoices
 router.get('/', async (req, res) => {
   try {
-    let list = await Invoice.find();
+    let invoices = await Invoice.find();
+
+    let list = [];
+    for (let invoice of invoices) {
+      var user = await User.findById(invoice['_idUser']);
+      var course = await Course.findById(invoice['_idCourse']);
+
+      item = {
+        _id: invoice._id,
+        user: user,
+        course: course,
+        totalPrice: invoice.totalPrice,
+        payDay: invoice.payDay,
+        status: invoice.status,
+        reportMsg: invoice.reportMsg,
+        isDelete: invoice.isDelete,
+      }
+
+      list.push(item);
+    }
+
     res.json(list);
   } catch(e) {
     res.status(400).json('Error: ' + e);

@@ -187,6 +187,7 @@ module.exports = {
   createInvoice: (
     _idUser,
     _idCourse,
+    _idDiscount,
     totalPrice,
     payDay,
     status,
@@ -196,6 +197,7 @@ module.exports = {
     var invoice = new Invoice({
       _id: new mongoose.Types.ObjectId(),
       _idUser: _idUser,
+      _idDiscount: _idDiscount,
       _idCourse: _idCourse,
       totalPrice: totalPrice,
       payDay: payDay,
@@ -342,6 +344,7 @@ module.exports = {
     return {
       _id: invoice._id,
       _idUser: invoice._idUser,
+      _idDiscount: invoice._idDiscount,
       _idCourse: invoice._idCourse,
       totalPrice: invoice.totalPrice,
       payDay: invoice.payDay,

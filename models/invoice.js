@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const invoiceSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   _idUser: mongoose.Schema.Types.ObjectId,
+  _idDiscount: mongoose.Schema.Types.ObjectId,
   _idCourse: mongoose.Schema.Types.ObjectId,
   totalPrice: {
     type: Number,

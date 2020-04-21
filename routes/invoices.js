@@ -19,10 +19,12 @@ router.get('/', async (req, res) => {
     for (let invoice of invoices) {
       var user = await User.findById(invoice['_idUser']);
       var course = await Course.findById(invoice['_idCourse']);
+      var discount = await Discount.findById(invoice['_idDiscount']);
 
       item = {
         _id: invoice._id,
         user: user,
+        discount: discount,
         course: course,
         totalPrice: invoice.totalPrice,
         payDay: invoice.payDay,
@@ -42,11 +44,12 @@ router.get('/', async (req, res) => {
 
 // Create Invoice
 router.post('/create', async (req, res) => {
-  let { _idUser, _idCourse, totalPrice, payDay, status, reportMsg } = req.body;
+  let { _idUser, _idDiscount, _idCourse, totalPrice, payDay, status, reportMsg } = req.body;
 
   try {
     let invoice = await modelGenerator.createInvoice(
       _idUser,
+      _idDiscount,
       _idCourse,
       totalPrice,
       payDay,

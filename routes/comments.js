@@ -8,7 +8,25 @@ let Comment = require('../models/comment');
 // Get All Comments
 router.get('/', async (req, res) => {
   try {
-    let list = await Comment.find();
+    let comments = await Comment.find();
+
+    let list = [];
+    for (comment of comments) {
+      let user = await User.findById(comment['_idUser']);
+      let lesson = await Lesson.findById(comment['_idLesson']);
+
+      let item = {
+        _id: comment._id,
+        user: user,
+        lesson: lesson,
+        content: comment.content,
+        isDelete: comment.isDelete,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt
+      }
+
+      list.push(item);
+    }
     res.json(list);
   } catch(e) {
     res.status(400).json('Error: ' + e);

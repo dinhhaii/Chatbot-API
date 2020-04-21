@@ -9,7 +9,26 @@ let Feedback = require('../models/feedback');
 // Get All Feedbacks
 router.get('/', async (req, res) => {
   try {
-    let list = await Feedback.find();
+    let feedbacks = await Feedback.find();
+
+    let list = [];
+    for (let feedback of feedbacks) {
+      let user = await User.findById(feedback['_idUser']);
+      let course = await Course.findById(feedback['_idCourse']);
+
+      let item = {
+        _id: feedback._id,
+        user: user,
+        course: course,
+        content: feedback.content,
+        rate: feedback.rate,
+        isDelete: feedback.isDelete,
+        createdAt: feedback.createdAt,
+        updatedAt: feedback.updatedAt
+      }
+
+      list.push(item);
+    }
     res.json(list);
   } catch(e) {
     res.status(400).json('Error: ' + e);

@@ -31,6 +31,8 @@ router.get('/', async (req, res) => {
         status: invoice.status,
         reportMsg: invoice.reportMsg,
         isDelete: invoice.isDelete,
+        createdAt: invoice.createdAt,
+        updatedAt: invoice.updatedAt
       }
 
       list.push(item);

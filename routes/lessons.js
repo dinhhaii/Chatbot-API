@@ -11,7 +11,27 @@ let User = require('../models/user');
 // Get All Lessons
 router.get('/', async (req, res) => {
   try {
-    let list = await Lesson.find();
+    let lessons = await Lesson.find();
+
+    let list = [];
+    for (let lesson of lessons) {
+      let course = await Course.findById(lesson['_idCourse']);
+
+      let item = {
+        _id: lesson._id,
+        course: course,
+        name: lesson.name,
+        description: lesson.description,
+        lectureURL: lesson.lectureURL,
+        files: lesson.files,
+        isDelete: lesson.isDelete,
+        createdAt: lesson.createdAt,
+        updatedAt: lesson.updatedAt
+      }
+
+      list.push(item);
+    }
+
     res.json(list);
   } catch(e) {
     res.status(400).json('Error: ' + e);

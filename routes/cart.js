@@ -54,7 +54,7 @@ router.get('/:idUser', async (req, res) => {
 
       res.json(result);
     } else {
-        let cart = await modelGenerator.createCart(_idUser, items);
+        let cart = await modelGenerator.createCart(idUser, []);
         res.json(cart);
     }
   } catch (e) {

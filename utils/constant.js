@@ -1,4 +1,5 @@
 module.exports = {
+    SECRET_KEY_STRIPE: "sk_test_JFlP6I3IseQdbqWYmAhE93vh00iVqllbei",
     CONNECTION_STRING: "mongodb+srv://dbCafocc:dbcafocc@cafocc-iax21.gcp.mongodb.net/cafocc?retryWrites=true&w=majority",
     JWT_SECRET: process.env.JWT_SECRET || "jwt_secret",
     GOOGLE_CLIENT_ID: "225505233278-fga9fpdso8hld9l6j05ltm6urf22l98n.apps.googleusercontent.com",

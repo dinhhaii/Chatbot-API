@@ -8,7 +8,25 @@ let Discount = require('../models/discount');
 // Get All Discount
 router.get('/', async (req, res) => {
   try {
-    let list = await Discount.find();
+    let discounts = await Discount.find();
+
+    let list = [];
+    for (let discount of discounts) {
+      let course = await Course.findById(discount['_idcourse']);
+
+      let item = {
+        _id: discount._id,
+        course: course,
+        code: discount.code,
+        percentage: discount.percentage,
+        status: discount.status,
+        isDelete: comment.isDelete,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt
+      }
+
+      list.push(item);
+    }
     res.json(list);
   } catch(e) {
     res.status(400).json('Error: ' + e);

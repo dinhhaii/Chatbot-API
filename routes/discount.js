@@ -20,9 +20,9 @@ router.get('/', async (req, res) => {
         code: discount.code,
         percentage: discount.percentage,
         status: discount.status,
-        isDelete: comment.isDelete,
-        createdAt: comment.createdAt,
-        updatedAt: comment.updatedAt
+        isDelete: discount.isDelete,
+        createdAt: discount.createdAt,
+        updatedAt: discount.updatedAt
       }
 
       list.push(item);

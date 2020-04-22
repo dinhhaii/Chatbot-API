@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
 
     let list = [];
     for (let discount of discounts) {
-      let course = await Course.findById(discount['_idcourse']);
+      let course = await Course.findById(discount['_idCourse']);
 
       let item = {
         _id: discount._id,

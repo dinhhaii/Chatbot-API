@@ -7,6 +7,8 @@ const modelGenerator = require('../utils/model-generator');
 const constant = require('../utils/constant');
 const nodemailer = require("nodemailer");
 const passwordGenerator = require('generate-password');
+const stripe = require("stripe")(constant.SECRET_KEY_STRIPE);
+const uuid = require("uuid/v4");
 
 const User = require('../models/user');
 
@@ -68,5 +70,39 @@ router.post('/hashed-password', async (req, res) => {
     res.json(e);
   };
 });
+
+// Hash Password
+router.post('/hashed-password', async (req, res) => {
+  let { password } = req.body;
+
+  try {
+    let saltRounds = 10;
+
+    var hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    res.json(hashedPassword);
+  } catch(e) {
+    res.json(e);
+  };
+});
+
+const charge = (tokenID, course) => {
+  return stripe.charges.create({
+    amount: course.price * 100,
+    currency: 'usd',
+    description: course.discount ? `${course.name} - (${course.discount.code} ${course.discount.percentage}%)` : course.name,
+    source: tokenID
+  })
+}
+router.post("/payment", async (req, res) => {
+  const { course, token } = req.body;
+  try {
+    const data = await charge(token.id, course);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json(error)
+  }
+
+})
 
 module.exports = router;

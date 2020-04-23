@@ -71,36 +71,42 @@ router.post('/hashed-password', async (req, res) => {
   };
 });
 
-// Hash Password
-router.post('/hashed-password', async (req, res) => {
-  let { password } = req.body;
-
-  try {
-    let saltRounds = 10;
-
-    var hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    res.json(hashedPassword);
-  } catch(e) {
-    res.json(e);
-  };
-});
-
-const charge = (tokenID, course) => {
+const charge = (tokenID, courses) => {
+  const total = courses.reduce((initVal, val) => initVal + val.price, 0);
+  const description = courses.reduce((initVal, value) => {
+    if (value.discount){
+      return initVal + `+${value.course.name} - $${value.price} - (${value.discount.code} ${value.discount.percentage}%)${'\n'}`;
+    }
+    return initVal + `+${value.course.name} - $${value.price}${'\n'}`
+   }, '');
   return stripe.charges.create({
-    amount: course.price * 100,
+    amount: total * 100,
     currency: 'usd',
-    description: course.discount ? `${course.name} - (${course.discount.code} ${course.discount.percentage}%)` : course.name,
+    description: description,
     source: tokenID
   })
 }
 router.post("/payment", async (req, res) => {
-  const { course, token } = req.body;
+  const { courses, token } = req.body;
   try {
-    const data = await charge(token.id, course);
+    const data = await charge(token.id, courses);
+    courses.forEach(async item => {
+      await modelGenerator.createInvoice(
+        item.idLearner,
+        item.course._id,
+        item.discount ? item.discount._id : null,
+        item.price,
+        new Date(),
+        'success',
+        '',
+        false
+      );
+    })
+
     res.json(data);
   } catch (error) {
-    res.status(500).json(error)
+    console.log(error);
+    res.status(400).json(error)
   }
 
 })

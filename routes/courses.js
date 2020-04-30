@@ -43,6 +43,37 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get Pending Courses
+router.get('/pending', async (req, res) => {
+  try {
+    let list = await Course.find({status: 'pending'});
+
+    let result = [];
+    for (let obj of list) {
+      let lessons = await Lesson.find({_idCourse: obj['_id']});
+      let feedback = await Feedback.find({_idCourse: obj['_id']});
+      let lecturer = await User.findById(obj['_idLecturer']);
+      let subject = await Subject.findById(obj['_idSubject']);
+      let discount = await Discount.find({_idCourse: obj['_id']});
+
+
+      obj = {
+        ...obj._doc,
+        subject: subject,
+        lecturer: lecturer,
+        discount: discount,
+        lessons: lessons,
+        feedback: feedback
+      }
+      result.push(obj);
+    }
+
+    res.json(result);
+  } catch (e) {
+    res.status(400).json(e);
+  }
+});
+
 // Get A Certain Courses + Course's Lessons
 router.get('/:id', async (req, res) => {
   try {
@@ -275,5 +306,7 @@ router.get('/lesson/:id', async (req, res) => {
     res.json(e);
   }
 });
+
+
 
 module.exports = router;

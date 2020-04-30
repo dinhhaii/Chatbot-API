@@ -124,6 +124,7 @@ router.get('/:id/enrolled', async (req, res) => {
       for(let invoice of invoices)
       {
         var course = await Course.findById(invoice._idCourse);
+        console.log(course);
         let lecturer = await User.findById(course._idLecturer);
 
         course = {
@@ -141,7 +142,7 @@ router.get('/:id/enrolled', async (req, res) => {
     }
     res.json(listCourses);
   } catch (e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json(e);
   }
 });
 

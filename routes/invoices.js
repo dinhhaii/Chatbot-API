@@ -51,8 +51,8 @@ router.post('/create', async (req, res) => {
   try {
     let invoice = await modelGenerator.createInvoice(
       _idUser,
-      _idDiscount,
       _idCourse,
+      _idDiscount,
       totalPrice,
       payDay,
       status,

@@ -135,14 +135,16 @@ module.exports = {
   },
 
   createFeedback: (
-     _idUser,
-     _idCourse,
-     content,
-     rate,
-     isDelete
+    _idInvoice,
+    _idUser,
+    _idCourse,
+    content,
+    rate,
+    isDelete
   ) => {
     var feedback = new Feedback({
       _id: new mongoose.Types.ObjectId(),
+      _idInvoice,
       _idUser: _idUser,
       _idCourse: _idCourse,
       content: content,

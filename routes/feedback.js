@@ -37,10 +37,11 @@ router.get('/', async (req, res) => {
 
 // Create Feedback
 router.post('/create', async (req, res) => {
-  let { _idUser, _idCourse, content, rate } = req.body;
+  let { _idInvoice, _idUser, _idCourse, content, rate } = req.body;
 
   try {
     let feedback = await modelGenerator.createFeedback(
+      _idInvoice,
       _idUser,
       _idCourse,
       content,

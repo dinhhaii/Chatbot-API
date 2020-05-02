@@ -79,7 +79,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get Learner's Enrolled Courses (Invoice included) by _idLearner
+// Get Learner's Enrolled Courses (Invoices) by _idLearner
 router.get('/:id/enrolled', async (req, res) => {
   try {
     let studentID = req.params.id;
@@ -93,9 +93,9 @@ router.get('/:id/enrolled', async (req, res) => {
       for(let invoice of invoices)
       {
         var course = await Course.findById(invoice._idCourse);
-        console.log(course);
         let lecturer = await User.findById(course._idLecturer);
-
+        let feedback = await Feedback.findOne({ _idInvoice: invoice._id });
+        
         course = {
           ...course._doc,
           lecturer
@@ -103,7 +103,8 @@ router.get('/:id/enrolled', async (req, res) => {
 
         const resultItem = {
           invoice: { ...invoice._doc },
-          course: course
+          course: course,
+          feedback,
         }
 
         listCourses.push(resultItem);

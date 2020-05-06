@@ -131,8 +131,11 @@ passport.authenticate(
 
 // User Registers
 router.post("/register", (req, res) => {
-  var { email, password, firstName, lastName, role } = req.body;
-  var imgURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
+  var { email, password, firstName, lastName, role, imageURL } = req.body;
+
+  if (!imageURL) {
+    imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
+  }
   const saltRounds = 10;
   User.findOne({ email: email, type: "local" }).then(user => {
 
@@ -148,7 +151,7 @@ router.post("/register", (req, res) => {
             firstName,
             lastName,
             role,
-            imgURL,
+            imageURL,
             'local',
             'unverified',
             null

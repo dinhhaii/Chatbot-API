@@ -10,5 +10,5 @@ module.exports = {
     PASSWORD_EMAIL: 'HaiTom!1',
     EMAIL_SECRET: "email_secret",
     URL_CLIENT: "http://localhost:3001",
-    //URL_CLIENT: "https://cafocc.herokuapp.com"
+    //URL_CLIENT: "https://cafocc.web.app"
 }

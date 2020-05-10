@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const constant = require('./utils/constant');
 
-const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const indexRouter = require('./routes/index');
 const coursesRouter = require('./routes/courses');
 const commentsRouter = require('./routes/comments');
 const feedbackRouter = require('./routes/feedback');
@@ -38,12 +38,11 @@ app.listen(port, () => {
 
 
 // View engine setup
+app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-app.use(passport.session());
-app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(logger('dev'));
 app.use(cors());
 
 // Router

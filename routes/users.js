@@ -9,68 +9,6 @@ const passwordGenerator = require('generate-password');
 
 let User = require('../models/user');
 
-// Get all users
-router.get("/", async (req, res) => {
-  try {
-    let list = await User.find();
-    res.json(list);
-  } catch (e) {
-    res.status(400).json('Error: ' + e);
-  }
-});
-
-// Get user by id
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    let user = await User.findById(id);
-    res.json(user);
-  } catch (e) {
-    res.status(400).json('Error: ' + e);
-  }
-});
-
-// Get all Learners
-router.get('/all-learners', async (req, res) => {
-  try {
-    let list = await User.find({role: 'learner'});
-    res.json(list);
-  } catch(e) {
-    res.status(400).json('Error: ' + e);
-  }
-});
-
-// Get all Lecturers
-router.get('/all-lecturers', async (req, res) => {
-  try {
-    let list = await User.find({role: 'lecturer'});
-    res.json(list);
-  } catch(e) {
-    res.status(400).json('Error: ' + e);
-  }
-});
-
-/* POST login. */
-router.post('/login', function (req, res, next) {
-    passport.authenticate('local', {session: false}, (err, user, info) => {
-        if (err || !user) {
-            return res.status(400).json({
-                message: info ? info.message : "Login failed",
-                user   : user
-            });
-        }
-       req.login(user, {session: false}, (err) => {
-           if (err) {
-               res.send(err);
-           }
-           // generate a signed json web token with the contents of user object and return it in the response
-
-           const token = jwtExtension.sign(user.toJSON(), constant.JWT_SECRET);
-           return res.json({user, token});
-        });
-    })(req, res);
-});
-
 // Google Sign in
 router.get('/google', passport.authenticate('google', {scope:['profile', 'email']}));
 
@@ -127,6 +65,58 @@ passport.authenticate(
     }
   }
 )(req, res);
+});
+
+// Get all users
+router.get("/", async (req, res) => {
+  try {
+    let list = await User.find();
+    res.json(list);
+  } catch (e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
+
+
+// Get all Learners
+router.get('/all-learners', async (req, res) => {
+  try {
+    let list = await User.find({role: 'learner'});
+    res.json(list);
+  } catch(e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
+
+// Get all Lecturers
+router.get('/all-lecturers', async (req, res) => {
+  try {
+    let list = await User.find({role: 'lecturer'});
+    res.json(list);
+  } catch(e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
+
+/* POST login. */
+router.post('/login', function (req, res, next) {
+    passport.authenticate('local', {session: false}, (err, user, info) => {
+        if (err || !user) {
+            return res.status(400).json({
+                message: info ? info.message : "Login failed",
+                user   : user
+            });
+        }
+       req.login(user, {session: false}, (err) => {
+           if (err) {
+               res.send(err);
+           }
+           // generate a signed json web token with the contents of user object and return it in the response
+
+           const token = jwtExtension.sign(user.toJSON(), constant.JWT_SECRET);
+           return res.json({user, token});
+        });
+    })(req, res);
 });
 
 // User Registers
@@ -290,5 +280,15 @@ router.post('/update', async (req, res) => {
   }
 });
 
+// Get user by id
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    let user = await User.findById(id);
+    res.json(user);
+  } catch (e) {
+    res.status(400).json('Error: ' + e);
+  }
+});
 
 module.exports = router;

@@ -73,10 +73,10 @@ const google = new GoogleStrategy(
     clientSecret: constant.GOOGLE_CLIENT_SECRET,
     callbackURL: '/user/google/redirect'
   },
-  function(accessToken, refreshToken, profile, cb) {
+  function(accessToken, refreshToken, profile, done) {
     let { emails, name, photos } = profile
 
-    User.findOne({ email: emails[0].value, type: "google" })
+    User.findOne({ email: emails[0].value, type: 'google' })
             .then(user => {
                 if(user) {
                     let _user = modelGenerator.toUserObject(user);
@@ -97,7 +97,6 @@ const google = new GoogleStrategy(
                         null
                       );
                     _user = { ..._user, token: jwtExtension.sign(JSON.stringify(_user), constant.JWT_SECRET) }
-                    console.log(_user);
                     return done(null, _user);
                 }
             })

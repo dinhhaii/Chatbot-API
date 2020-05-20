@@ -126,7 +126,7 @@ router.get('/:id/enrolled', async (req, res) => {
         var course = await Course.findById(invoice._idCourse);
         let lecturer = await User.findById(course._idLecturer);
         let feedback = await Feedback.findOne({ _idInvoice: invoice._id });
-        
+
         course = {
           ...course._doc,
           lecturer
@@ -182,12 +182,18 @@ router.get('/:id/teaching', async (req, res) => {
 
 // Create Course
 router.post('/create', async (req, res) => {
-  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays } = req.body;
+  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays, tags } = req.body;
   if (!imageURL)
   {
     imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
   }
+
   try {
+    let tagsArray = [];
+    if (tags) {
+      tagsArray = tags.toLowerCase().split(/[\[\]<>?\/.,;:{}|~`!@#$%^&*()-_+=\\]/);
+    }
+
     let course = await modelGenerator.createCourse(
       _idLecturer,
       _idSubject,
@@ -199,6 +205,7 @@ router.post('/create', async (req, res) => {
       duration,
       accessibleDays,
       'pending',
+      tagsArray,
       false
     );
     res.json(course);
@@ -215,7 +222,17 @@ router.post('/update', async (req, res) => {
   {
     for (let key in req.body)
     {
-      course[key] = req.body[key];
+      if (key === 'tags')
+      {
+        let tagsArray = [];
+        if (req.body[key]) {
+          tagsArray = req.body[key].toLowerCase().split(/[\[\]<>?\/.,;:{}|~`!@#$%^&*()-_+=\\]/);
+          course[key] = tagsArray;
+        }
+      }
+      else {
+        course[key] = req.body[key];
+      }
     }
     course
       .save()

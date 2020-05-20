@@ -57,6 +57,7 @@ module.exports = {
     duration,
     accessibleDays,
     status,
+    tags,
     isDelete
   ) => {
     var course = new Course({
@@ -71,6 +72,7 @@ module.exports = {
       duration: duration,
       accessibleDays: accessibleDays,
       status: status,
+      tags: tags,
       isDelete: isDelete
     });
     course
@@ -281,6 +283,7 @@ module.exports = {
       duration: course.duration,
       accessibleDays: course.accessibleDays,
       status: course.status,
+      tags: course.tags,
       isDelete: course.isDelete
     }
   },

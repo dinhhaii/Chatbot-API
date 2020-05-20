@@ -36,6 +36,10 @@ const courseSchema = mongoose.Schema({
     type: String,
     require: false
   },
+  tags :{
+    type: Array,
+    require: true
+  },
   isDelete: {
     type: Boolean,
     require: true

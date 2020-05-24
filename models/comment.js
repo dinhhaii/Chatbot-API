@@ -16,4 +16,6 @@ const commentSchema = mongoose.Schema({
   timestamps: true,
 });
 
+commentSchema.index({'content': 'text' });
+
 module.exports = mongoose.model('comment', commentSchema);

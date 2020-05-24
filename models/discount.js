@@ -23,4 +23,6 @@ const discountSchema = mongoose.Schema({
   timestamps: true,
 });
 
+discountSchema.index({'code': 'text' });
+
 module.exports = mongoose.model('discount', discountSchema);

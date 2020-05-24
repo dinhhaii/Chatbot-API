@@ -27,4 +27,6 @@ const lessonSchema = mongoose.Schema({
   timestamps: true,
 });
 
+lessonSchema.index({ 'name': 'text', 'description': 'text' });
+
 module.exports = mongoose.model('lesson', lessonSchema);

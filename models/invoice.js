@@ -29,4 +29,6 @@ const invoiceSchema = mongoose.Schema({
   timestamps: true,
 });
 
+invoiceSchema.index({ 'reportMsg': 'text' });
+
 module.exports = mongoose.model('invoice', invoiceSchema);

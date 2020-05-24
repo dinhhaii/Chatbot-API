@@ -38,7 +38,7 @@ const courseSchema = mongoose.Schema({
   },
   tags :{
     type: Array,
-    require: true
+    require: false,
   },
   isDelete: {
     type: Boolean,
@@ -47,5 +47,7 @@ const courseSchema = mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+courseSchema.index({ 'name': 'text', 'description': 'text' });
 
 module.exports = mongoose.model('course', courseSchema);

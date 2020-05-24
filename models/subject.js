@@ -18,4 +18,5 @@ const subjectSchema = mongoose.Schema({
   timestamps: true,
 });
 
+subjectSchema.index({ 'name': 'text' });
 module.exports = mongoose.model('subject', subjectSchema);

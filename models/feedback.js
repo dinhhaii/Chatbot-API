@@ -21,4 +21,6 @@ const feedbackSchema = mongoose.Schema({
   timestamps: true,
 });
 
+feedbackSchema.index({'content': 'text' });
+
 module.exports = mongoose.model('feedback', feedbackSchema);

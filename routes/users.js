@@ -130,7 +130,7 @@ router.post("/register", (req, res) => {
   User.findOne({ email: email, type: "local" }).then(user => {
 
     if (user) {
-      res.json({ message: "This user has already existed" });
+      res.json({ error: "This user has already existed" });
     } else {
       bcrypt
         .hash(password, saltRounds)

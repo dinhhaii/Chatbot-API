@@ -191,7 +191,7 @@ router.post('/create', async (req, res) => {
   try {
     let tagsArray = [];
     if (tags) {
-      tagsArray = tags.toLowerCase().split(/[\[\]<>?\/.,;:{}|~`!@#$%^&*()-_+=\\]/);
+      tagsArray = tags.toLowerCase().split(/,/);
     }
 
     let course = await modelGenerator.createCourse(
@@ -226,7 +226,7 @@ router.post('/update', async (req, res) => {
       {
         let tagsArray = [];
         if (req.body[key]) {
-          tagsArray = req.body[key].toLowerCase().split(/[\[\]<>?\/.,;:{}|~`!@#$%^&*()-_+=\\]/);
+          tagsArray = req.body[key].toLowerCase().split(/,/);
           course[key] = tagsArray;
         }
       }

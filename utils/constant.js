@@ -2,6 +2,8 @@ module.exports = {
     SECRET_KEY_STRIPE: "sk_test_JFlP6I3IseQdbqWYmAhE93vh00iVqllbei",
     CONNECTION_STRING: "mongodb+srv://dbCafocc:dbcafocc@cafocc-iax21.gcp.mongodb.net/hacademy?retryWrites=true&w=majority",
     JWT_SECRET: process.env.JWT_SECRET || "jwt_secret",
+    // GOOGLE_CLIENT_ID: "225505233278-e8b875jlitd5dluj706bvrjh2c0emjr3.apps.googleusercontent.com",
+    // GOOGLE_CLIENT_SECRET: "WIndolH3T-1vMAkM1NR8GLru",
     GOOGLE_CLIENT_ID: "225505233278-fga9fpdso8hld9l6j05ltm6urf22l98n.apps.googleusercontent.com",
     GOOGLE_CLIENT_SECRET: "UFSa4vT7lfDYMRMiutESZNzc",
     FACEBOOK_CLIENT_ID: "1811382482329129",

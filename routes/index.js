@@ -91,6 +91,7 @@ const charge = (tokenID, courses) => {
     source: tokenID
   })
 }
+
 router.post("/payment", async (req, res) => {
   const { courses, token } = req.body;
   try {
@@ -113,7 +114,6 @@ router.post("/payment", async (req, res) => {
     console.log(error);
     res.status(400).json(error)
   }
-
 })
 
 module.exports = router;

@@ -49,20 +49,21 @@ passport.authenticate(
     failureRedirect: `${constant.URL_CLIENT}`
   },
   (error, user) => {
+    if (error) {
+      console.log(error);
+      res.json({ error: error.message });
+    }
     if (user) {
-      req.login(user, { session: false }, err => {
-        const query = {...user, _id: user._id.toString()};
+      req.login(user, { session: false }, (err) => {
+        const query = { ...user, _id: user._id.toString() };
         if (err) {
-          res.send(err);
+          res.json({ message: err });
         }
-        const redirectURL = url.format({
-          pathname: `${constant.URL_CLIENT}/login`,
-          query: query
-        });
+        const redirectURL = `${constant.URL_CLIENT}/auth/login?${queryString.stringify(query)}`;
         res.redirect(redirectURL);
       });
     } else {
-      return res.json({ message: "Error occured", error });
+      return res.json({ message: "User not found!" });
     }
   }
 )(req, res);

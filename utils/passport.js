@@ -124,50 +124,40 @@ const facebook = new FacebookStrategy(
     clientSecret: constant.FACEBOOK_CLIENT_SECRET,
     callbackURL: "/user/facebook/redirect",
     profileFields: ["id", "first_name", "last_name", "photos", "email"],
-    enableProof: true, // For security
-    passReqToCallback: true, // Pass request from route
   },
-  function (accessToken, refreshToken, profile, user, done) {
+  async function (accessToken, refreshToken, profile, user, done) {
     let { id, name, photos } = user;
+    try {
+      const user = await User.findOne({ email: id, type: "facebook" });
+      if (user) {
+        const newUser = {
+          ...user._doc,
+          token: jwtExtension.sign(JSON.stringify(user._doc), constant.JWT_SECRET),
+        };
+        return done(null, newUser);
 
-    User.findOne({ email: id, type: "google" })
-      .then((user) => {
-        if (user) {
-          let _user = modelGenerator.toUserObject(user);
-          _user = {
-            ..._user,
-            token: jwtExtension.sign(
-              JSON.stringify(_user),
-              constant.JWT_SECRET
-            ),
-          };
-          return done(null, _user);
-        } else {
-          let _user = modelGenerator.createUser(
-            id,
-            "",
-            name.givenName,
-            name.familyName,
-            null,
-            photos[0].value,
-            "facebook",
-            "verified",
-            null
-          );
-          _user = {
-            ..._user,
-            token: jwtExtension.sign(
-              JSON.stringify(_user),
-              constant.JWT_SECRET
-            ),
-          };
-          console.log(_user);
-          return done(null, _user);
-        }
-      })
-      .catch((err) => {
-        return done(err);
-      });
+      } else {
+        const newUser = await modelGenerator.createUser(
+          id,
+          "",
+          name.familyName,
+          name.givenName,
+          null,
+          photos[0].value,
+          "facebook",
+          "verified",
+          ""
+        );
+        newUser = {
+          ...newUser,
+          token: jwtExtension.sign(JSON.stringify(newUser), constant.JWT_SECRET),
+        };
+        return done(null, newUser);
+      }
+    } catch(e) {
+      console.log(e);
+      done(e);
+    }
   }
 );
 

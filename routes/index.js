@@ -12,6 +12,11 @@ const uuid = require("uuid/v4");
 
 const User = require('../models/user');
 
+router.get("/", (req, res) => {
+  res.send(`<div>Client: <a href="${constant.URL_CLIENT}">${constant.URL_CLIENT}</a></div>
+            <div>Admin: <a href="${constant.URL_ADMIN}">${constant.URL_ADMIN}</a></div>`);
+});
+
 /* GET user profile. */
 router.get('/profile', passport.authenticate('jwt', {session: false}), (req, res) => {
   const authInfo = req.authInfo;
@@ -86,6 +91,7 @@ const charge = (tokenID, courses) => {
     source: tokenID
   })
 }
+
 router.post("/payment", async (req, res) => {
   const { courses, token } = req.body;
   try {
@@ -108,7 +114,6 @@ router.post("/payment", async (req, res) => {
     console.log(error);
     res.status(400).json(error)
   }
-
 })
 
 module.exports = router;

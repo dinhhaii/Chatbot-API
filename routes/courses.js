@@ -12,34 +12,39 @@ let Discount = require('../models/discount');
 let Comment = require('../models/comment');
 
 // Get All Courses
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
+  const { search } = req.body;
   try {
-    let list = await Course.find();
-
-    let result = [];
-
-    for (let obj of list) {
-      let lessons = await Lesson.find({_idCourse: obj['_id']});
-      let feedback = await Feedback.find({_idCourse: obj['_id']});
-      let lecturer = await User.findById(obj['_idLecturer']);
-      let subject = await Subject.findById(obj['_idSubject']);
-      let discount = await Discount.find({_idCourse: obj['_id']});
-
-
-      obj = {
-        ...obj._doc,
-        subject: subject,
-        lecturer: lecturer,
-        discount: discount,
-        lessons: lessons,
-        feedback: feedback
-      }
-      result.push(obj);
+    const pipelines = [];
+    if (search && search.length !== 0) {
+      pipelines.push(
+        { $match: { $text: { $search: search }, isDelete: false }},
+        { $sort: { score: { $meta: "textScore" }}});
+    } else {
+      pipelines.push(
+        { $match: { isDelete: false }},
+        { $sort: { createdAt: -1 }});
     }
 
-    res.json(result);
+    Course.aggregate([
+      ...pipelines,
+      { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+      { $lookup: { from: 'lessons', localField: '_id', foreignField: '_idCourse', as: 'lessons' }},
+      { $lookup: { from: 'discounts', localField: '_id', foreignField: '_idCourse', as: 'discount' }},
+      { $lookup: { from: 'users', localField: '_idLecturer', foreignField: '_id', as: 'lecturer' }},
+      { $lookup: { from: 'subjects', localField: '_idSubject', foreignField: '_id', as: 'subject' }},
+      { $unwind: '$lecturer' },
+      { $unwind: '$subject' }
+    ]).exec((err, result) => {
+      if (err) {
+        console.log(err);
+        res.json({ error: err.message });
+      }
+      res.json(result);
+    })
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    console.log(e);
+    res.json({ error: e.message });
   }
 });
 

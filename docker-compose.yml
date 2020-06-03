@@ -1,0 +1,30 @@
+version: '3'
+
+services: 
+    be-hacademy:
+        build: ./
+        volumes:
+            - /usr/src/be-hacademy/node_modules
+            - ./:/usr/src/be-hacademy
+        ports:
+            - 3000:3000
+    fe-hacademy:
+        stdin_open: true
+        build: ../OnlineCourses-FE
+        volumes: 
+            - /usr/src/fe-hacademy/node_modules
+            - ../OnlineCourses-FE:/usr/src/fe-hacademy
+        ports:
+            - 3001:3000
+        depends_on: 
+            - be-hacademy
+    fe-hacademy-admin:
+        stdin_open: true
+        build: ../OnlineCoursesAdmin-FE
+        volumes: 
+            - /usr/src/fe-hacademy-admin/node_modules
+            - ../OnlineCoursesAdmin-FE:/usr/src/fe-hacademy-admin
+        ports:
+            - 3002:3000
+        depends_on: 
+            - be-hacademy

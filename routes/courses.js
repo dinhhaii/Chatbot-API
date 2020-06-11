@@ -13,17 +13,26 @@ let Comment = require('../models/comment');
 
 // Get All Courses
 router.post('/', async (req, res) => {
-  const { search } = req.body;
+  const { search, popular, offset, limit } = req.body;
   try {
     const pipelines = [];
     if (search && search.length !== 0) {
       pipelines.push(
         { $match: { $text: { $search: search }, isDelete: false }},
         { $sort: { score: { $meta: "textScore" }}});
+    } else if (popular) {
+      pipelines.push({ $match: { isDelete: false }});
     } else {
       pipelines.push(
         { $match: { isDelete: false }},
         { $sort: { createdAt: -1 }});
+    }
+
+    if (offset) {
+      pipelines.push({ $skip: Number(offset) });
+    };
+    if (limit) {
+      pipelines.push({ $limit: Number(limit) });
     }
 
     Course.aggregate([
@@ -40,7 +49,15 @@ router.post('/', async (req, res) => {
         console.log(err);
         res.json({ error: err.message });
       }
-      res.json(result);
+      if (popular) {
+        res.json(result.sort((a, b) => {
+          const rateA = a.feedback.reduce((init, value) => init + value.rate, 0) / a.feedback.length;
+          const rateB = b.feedback.reduce((init, value) => init + value.rate, 0) / b.feedback.length;
+          return rateB - rateA;
+        }));
+      } else {
+        res.json(result);
+      }
     })
   } catch(e) {
     console.log(e);

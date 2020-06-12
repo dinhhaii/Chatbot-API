@@ -130,14 +130,14 @@ const facebook = new FacebookStrategy(
     try {
       const user = await User.findOne({ email: id, type: "facebook" });
       if (user) {
-        const newUser = {
+        let newUser = {
           ...user._doc,
           token: jwtExtension.sign(JSON.stringify(user._doc), constant.JWT_SECRET),
         };
         return done(null, newUser);
 
       } else {
-        const newUser = await modelGenerator.createUser(
+        let newUser = await modelGenerator.createUser(
           id,
           "",
           name.familyName,

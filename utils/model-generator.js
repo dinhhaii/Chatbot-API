@@ -19,7 +19,7 @@ module.exports = {
     lastName,
     role,
     imageURL,
-    type,
+    idFacebook,
     status,
     bio
   ) => {
@@ -31,7 +31,7 @@ module.exports = {
       lastName: lastName,
       role: role,
       imageURL: imageURL,
-      type: type,
+      idFacebook: idFacebook,
       status: status,
       bio: bio
     });
@@ -297,7 +297,7 @@ module.exports = {
       lastName: user.lastName,
       role: user.role,
       imageURL: user.imageURL,
-      type: user.type,
+      idFacebook: user.idFacebook,
       status: user.status,
       bio: user.bio
     };

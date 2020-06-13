@@ -6,11 +6,39 @@ let Subject = require('../models/subject');
 
 // Get all Subjects
 router.get("/", async (req, res) => {
+  const { search, offset, limit } = req.query;
   try {
-    let list = await Subject.find();
-    res.json(list);
-  } catch (e) {
-    res.status(400).json('Error: ' + e);
+    const pipelines = [];
+    if (search && search.length !== 0) {
+      pipelines.push(
+        { $match: { $text: { $search: search }, isDelete: false }},
+        { $sort: { score: { $meta: "textScore" }}});
+    } else {
+      pipelines.push(
+        { $match: { isDelete: false }},
+        { $sort: { createdAt: -1 }});
+    }
+
+    if (offset) {
+      pipelines.push({ $skip: Number(offset) });
+    };
+    if (limit) {
+      pipelines.push({ $limit: Number(limit) });
+    }
+
+    Subject.aggregate([ 
+      ...pipelines,
+      { $lookup: { from: 'courses', localField: '_id', foreignField: '_idSubject', as: 'courses' }}
+     ]).exec((err, result) => {
+      if (err) {
+        console.log(err);
+        res.json({ error: err.message });
+      }
+      res.json(result);
+    })
+  } catch(e) {
+    console.log(e);
+    res.json({ error: e.message });
   }
 });
 

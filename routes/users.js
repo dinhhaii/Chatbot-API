@@ -122,47 +122,44 @@ router.post('/login', function (req, res, next) {
 });
 
 // User Registers
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
   var { email, password, firstName, lastName, role, imageURL } = req.body;
-
   if (!imageURL) {
     imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
   }
-  const saltRounds = 10;
-  User.findOne({ email: email, type: "local" }).then(user => {
 
+  try {
+    const saltRounds = 10;
+    const user = await User.findOne({ email: email });
+  
     if (user) {
       res.json({ error: "This user has already existed" });
     } else {
-      bcrypt
-        .hash(password, saltRounds)
-        .then(hash => {
-          const user = modelGenerator.createUser(
-            email,
-            hash,
-            firstName,
-            lastName,
-            role,
-            imageURL,
-            'local',
-            'unverified',
-            null
-          );
-          const objectUser = modelGenerator.toUserObject(user);
-          res.send(objectUser);
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      const hash = await bcrypt.hash(password, saltRounds);
+      const user = await modelGenerator.createUser(
+        email,
+        hash,
+        firstName,
+        lastName,
+        role,
+        imageURL,
+        "",
+        "unverified",
+        ""
+      );
+      res.send(user);
     }
-  });
+  } catch(err) {
+    console.log(err);
+    res.json({ error: err.message });
+  }
 });
 
 // Forgot Password
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   try {
-    const user = await User.findOne({email, type: 'local'});
+    const user = await User.findOne({email});
 
     if (user) {
       const saltRounds = 10;
@@ -201,10 +198,10 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
     else {
-      res.json(null);
+      res.json({ error: "User not founded in database." });
     }
   } catch(error) {
-    res.json(error);
+    res.json({ error: error.message });
   }
 });
 
@@ -255,7 +252,7 @@ router.post('/verify', async (req, res) => {
 
 // Update User info
 router.post('/update', async (req, res) => {
-  var { _idUser, password, type } = req.body;
+  var { _idUser, password } = req.body;
   const saltRounds = 10;
   var user = await User.findById({ _id: _idUser });
 
@@ -264,21 +261,22 @@ router.post('/update', async (req, res) => {
       if (user[key] === req.body[key]||(key==="password")) continue;
       user[key] = req.body[key];
     }
-    if (password === "" || type === "facebook" || type === "google") {
-      user
-        .save()
-        .then(result => res.json(result))
-        .catch(err => console.log(err));
-    } else if (user.password !== req.body.password && req.body.password) {
+    const equalPassword = await bcrypt.compare(password, user.password);
+
+    if (!equalPassword) {
       var hash = await bcrypt.hash(password, saltRounds);
       user.password = hash;
     }
+
     user
-        .save()
-        .then(result => {
-          res.json(result);
-        })
-        .catch(err => console.log(err));
+      .save()
+      .then((result) => {
+        res.json(result);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.json({ error: err.message });
+      });
   }
 });
 
@@ -289,7 +287,7 @@ router.get("/:id", async (req, res) => {
     let user = await User.findById(id);
     res.json(user);
   } catch (e) {
-    res.status(400).json('Error: ' + e);
+    res.json({ error: err.message });
   }
 });
 

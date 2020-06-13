@@ -49,7 +49,7 @@ const local = new LocalStrategy(
   },
   function (email, password, cb) {
     //this one is typically a DB call. Assume that the returned user object is pre-formatted and ready for storing in JWT
-    return User.findOne({ email: email, type: "local" })
+    return User.findOne({ email: email })
       .then((user) => {
         if (!user) {
           return cb(null, false, { message: "Incorrect email or password." });
@@ -76,10 +76,7 @@ const google = new GoogleStrategy(
   async function (accessToken, refreshToken, profile, done) {
     let { emails, name, photos } = profile;
     try {
-      const user = await User.findOne({
-        email: emails[0].value,
-        type: "google",
-      });
+      const user = await User.findOne({ email: emails[0].value });
       if (user) {
         let newUser = await modelGenerator.toUserObject(user);
         newUser = {
@@ -98,7 +95,7 @@ const google = new GoogleStrategy(
           name.familyName,
           null,
           photos[0].value,
-          "google",
+          "",
           "verified",
           ""
         );
@@ -128,7 +125,7 @@ const facebook = new FacebookStrategy(
   async function (accessToken, refreshToken, profile, user, done) {
     let { id, name, photos } = user;
     try {
-      const user = await User.findOne({ email: id, type: "facebook" });
+      const user = await User.findOne({ idFacebook: id });
       if (user) {
         let newUser = {
           ...user._doc,
@@ -138,13 +135,13 @@ const facebook = new FacebookStrategy(
 
       } else {
         let newUser = await modelGenerator.createUser(
-          id,
+          "",
           "",
           name.familyName,
           name.givenName,
           null,
           photos[0].value,
-          "facebook",
+          id,
           "verified",
           ""
         );

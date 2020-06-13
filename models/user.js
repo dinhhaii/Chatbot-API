@@ -29,7 +29,7 @@ const userSchema = mongoose.Schema(
       type: String,
       require: false,
     },
-    type: {
+    idFacebook: {
       type: String,
       require: true,
     },

@@ -116,4 +116,36 @@ router.post("/payment", async (req, res) => {
   }
 })
 
+// Send Email
+router.post('/submit-contact', async (req, res) => {
+  const { inputEmail, inputName, inputSubject, inputMsg } = req.body
+  try {
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: constant.USERNAME_EMAIL,
+        pass: constant.PASSWORD_EMAIL
+      }
+    });
+
+    var mailOptions = {
+      from: constant.USERNAME_EMAIL,
+      to: constant.USERNAME_EMAIL,
+      subject: `Contact Submit (${inputSubject})`,
+      text: `From ${inputName} (${inputEmail}) - Message: ${inputMsg}`
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+        res.json({message: 'Your message was sent! Thank you for reaching out to us!'});
+      }
+    });
+  } catch(e) {
+    res.json(error);
+  };
+});
+
 module.exports = router;

@@ -7,6 +7,7 @@ const constant = require('../utils/constant');
 const nodemailer = require("nodemailer");
 const passwordGenerator = require('generate-password');
 const queryString = require('query-string');
+const mongoose = require('mongoose');
 
 let User = require('../models/user');
 
@@ -71,11 +72,20 @@ passport.authenticate(
 
 // Get all users
 router.get("/", async (req, res) => {
+  const { email } = req.query;
   try {
-    let list = await User.find();
-    res.json(list);
+    if (email) {
+      let user = await User.findOne({ email });
+      if (user) {
+        res.json(user);
+      }
+      res.json({ error: "User not found "});
+    } else {
+      let list = await User.find();
+      res.json(list);
+    }
   } catch (e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -86,7 +96,7 @@ router.get('/all-learners', async (req, res) => {
     let list = await User.find({role: 'learner'});
     res.json(list);
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -96,7 +106,7 @@ router.get('/all-lecturers', async (req, res) => {
     let list = await User.find({role: 'lecturer'});
     res.json(list);
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -123,10 +133,7 @@ router.post('/login', function (req, res, next) {
 
 // User Registers
 router.post("/register", async (req, res) => {
-  var { email, password, firstName, lastName, role, imageURL } = req.body;
-  if (!imageURL) {
-    imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
-  }
+  var { email, password, firstName, lastName, role, imageURL, idFacebook } = req.body;
 
   try {
     const saltRounds = 10;
@@ -142,8 +149,8 @@ router.post("/register", async (req, res) => {
         firstName,
         lastName,
         role,
-        imageURL,
-        "",
+        imageURL || `${req.protocol}://${req.get("host")}/images/no-avatar.png`,
+        idFacebook || "",
         "unverified",
         ""
       );
@@ -179,7 +186,7 @@ router.post('/forgot-password', async (req, res) => {
       var mailOptions = {
         from: constant.USERNAME_EMAIL,
         to: email,
-        subject: '[CAFOCC] - EMAIL VERIFICATION',
+        subject: '[Hacademy] - EMAIL VERIFICATION',
         html: `Please click the link to confirm: <a href="${url}">${url}</a>
           <p>The link will be expired in 24h.</p>`,
         expire: '1d'
@@ -230,7 +237,7 @@ router.post('/verify', async (req, res) => {
     var mailOptions = {
       from: constant.USERNAME_EMAIL,
       to: email,
-      subject: '[CAFOCC] - ACCOUNT VERIFICATION',
+      subject: '[Hacademy] - ACCOUNT VERIFICATION',
       html: `Please click the link to confirm: <a href="${url}">${url}</a>
         <p>The link will be expired in 24h.</p>`,
       expire: '1d'
@@ -245,7 +252,7 @@ router.post('/verify', async (req, res) => {
       }
     });
   } catch(e) {
-    res.json(error);
+    res.json({ error: e.message });
   };
 });
 
@@ -284,9 +291,12 @@ router.post('/update', async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    let user = await User.findById(id);
+    let user = await User.findById(mongoose.Schema.Types.ObjectId(id));
+    if (!user) {
+      user = await User.findOne({ idFacebook: id });
+    }
     res.json(user);
-  } catch (e) {
+  } catch (err) {
     res.json({ error: err.message });
   }
 });

@@ -271,7 +271,7 @@ router.post("/update", async (req, res) => {
 
     if (user) {
       for (var key in req.body) {
-        if (!user[key] || user[key] === req.body[key] || key === "password") continue;
+        if (user[key] === req.body[key] || key === "password") continue;
         user[key] = req.body[key];
       }
 

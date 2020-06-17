@@ -133,18 +133,17 @@ router.post('/login', function (req, res, next) {
 
 // User Registers
 router.post("/register", async (req, res) => {
-  var { email, password, firstName, lastName, role, imageURL, idFacebook } = req.body;
+  var { email, password, firstName, lastName, role, imageURL, idFacebook, status } = req.body;
 
   try {
     const saltRounds = 10;
     const user = await User.findOne({ email });
-    // const fbUser = await User.findOne({ idFacebook })
+    const fbUser = await User.findOne({ idFacebook })
 
-    if (user) {
+    if (user || fbUser) {
       res.json({ error: "This user has already existed" });
     } else {
       const hash = await bcrypt.hash(password, saltRounds);
-      console.log(hash);
       const user = await modelGenerator.createUser(
         email,
         hash,
@@ -153,10 +152,14 @@ router.post("/register", async (req, res) => {
         role,
         imageURL || `${req.protocol}://${req.get("host")}/images/no-avatar.png`,
         idFacebook || "",
-        "unverified",
+        status || "unverified",
         ""
       );
-      res.send(user);
+      const newUser = {
+        ...user,
+        token: jwtExtension.sign(JSON.stringify(user), constant.JWT_SECRET),
+      };
+      res.send(newUser);
     }
   } catch(err) {
     console.log(err);
@@ -268,25 +271,33 @@ router.post("/update", async (req, res) => {
 
     if (user) {
       for (var key in req.body) {
-        if (user[key] === req.body[key] || key === "password") continue;
+        if (!user[key] || user[key] === req.body[key] || key === "password") continue;
         user[key] = req.body[key];
       }
-      const equalPassword = await bcrypt.compare(password, user.password);
 
-      if (!equalPassword) {
-        var hash = await bcrypt.hash(password, saltRounds);
-        user.password = hash;
+      if (password) {
+        const equalPassword = await bcrypt.compare(password, user.password);
+        if (!equalPassword) {
+          var hash = await bcrypt.hash(password, saltRounds);
+          user.password = hash;
+        }
       }
 
       user
         .save()
         .then((result) => {
-          res.json(result);
+          const newUser = {
+            ...result._doc,
+            token: jwtExtension.sign(JSON.stringify(result._doc), constant.JWT_SECRET)
+          };
+          res.json(newUser);
         })
         .catch((err) => {
           console.log(err);
           res.json({ error: err.message });
         });
+    } else {
+      res.json({ error: "User not found." });
     }
   } catch (e) {
     console.log(e);

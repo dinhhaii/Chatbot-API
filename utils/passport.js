@@ -8,6 +8,8 @@ const passportJWT = require("passport-jwt");
 const passportLocal = require("passport-local");
 const passportGoogle = require("passport-google-oauth20");
 const passportFacebook = require("passport-facebook");
+const axios = require('axios');
+const { sha256 } = require('js-sha256');
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
@@ -125,32 +127,40 @@ const facebook = new FacebookStrategy(
   async function (accessToken, refreshToken, profile, user, done) {
     let { id, name, photos } = user;
     try {
-      const user = await User.findOne({ idFacebook: id });
-      if (user) {
-        let newUser = {
-          ...user._doc,
-          token: jwtExtension.sign(JSON.stringify(user._doc), constant.JWT_SECRET),
-        };
-        return done(null, newUser);
+      const appsecret_proof = sha256.hmac(constant.FACEBOOK_CLIENT_SECRET, constant.PAGE_ACCESS_TOKEN);
+      const { data } = await axios.get(`https://graph.facebook.com/${id}/ids_for_pages?access_token=${constant.PAGE_ACCESS_TOKEN}&appsecret_proof=${appsecret_proof}`);
+      if (!data.error) {
+        const res = data.data.reduce((initVal, val) => val.page.name === "Hacademy" ? val : initVal, null);
 
-      } else {
-        let newUser = await modelGenerator.createUser(
-          "",
-          "",
-          name.familyName,
-          name.givenName,
-          null,
-          photos[0].value,
-          id,
-          "verified",
-          ""
-        );
-        newUser = {
-          ...newUser,
-          token: jwtExtension.sign(JSON.stringify(newUser), constant.JWT_SECRET),
-        };
-        return done(null, newUser);
+        const user = await User.findOne({ idFacebook: res.id });
+        if (user) {
+          let newUser = {
+            ...user._doc,
+            token: jwtExtension.sign(JSON.stringify(user._doc), constant.JWT_SECRET),
+          };
+          return done(null, newUser);
+  
+        } else {
+          let newUser = await modelGenerator.createUser(
+            "",
+            "",
+            name.familyName,
+            name.givenName,
+            null,
+            photos[0].value,
+            id,
+            "verified",
+            ""
+          );
+          newUser = {
+            ...newUser,
+            token: jwtExtension.sign(JSON.stringify(newUser), constant.JWT_SECRET),
+          };
+          return done(null, newUser);
+        }
       }
+      console.log(data.error);
+      done(data.error);
     } catch(e) {
       console.log(e);
       done(e);

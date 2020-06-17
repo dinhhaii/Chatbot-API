@@ -58,13 +58,13 @@ passport.authenticate(
       req.login(user, { session: false }, (err) => {
         const query = { ...user, _id: user._id.toString() };
         if (err) {
-          res.json({ message: err });
+          res.json({ error: err });
         }
         const redirectURL = `${constant.URL_CLIENT}/auth/login?${queryString.stringify(query)}`;
         res.redirect(redirectURL);
       });
     } else {
-      return res.json({ message: "User not found!" });
+      return res.json({ error: "User not found!" });
     }
   }
 )(req, res);
@@ -137,12 +137,14 @@ router.post("/register", async (req, res) => {
 
   try {
     const saltRounds = 10;
-    const user = await User.findOne({ email: email });
-  
+    const user = await User.findOne({ email });
+    // const fbUser = await User.findOne({ idFacebook })
+
     if (user) {
       res.json({ error: "This user has already existed" });
     } else {
       const hash = await bcrypt.hash(password, saltRounds);
+      console.log(hash);
       const user = await modelGenerator.createUser(
         email,
         hash,
@@ -258,32 +260,37 @@ router.post('/verify', async (req, res) => {
 
 
 // Update User info
-router.post('/update', async (req, res) => {
+router.post("/update", async (req, res) => {
   var { _idUser, password } = req.body;
   const saltRounds = 10;
-  var user = await User.findById({ _id: _idUser });
+  try {
+    var user = await User.findById({ _id: _idUser });
 
-  if (user) {
-    for (var key in req.body) {
-      if (user[key] === req.body[key]||(key==="password")) continue;
-      user[key] = req.body[key];
+    if (user) {
+      for (var key in req.body) {
+        if (user[key] === req.body[key] || key === "password") continue;
+        user[key] = req.body[key];
+      }
+      const equalPassword = await bcrypt.compare(password, user.password);
+
+      if (!equalPassword) {
+        var hash = await bcrypt.hash(password, saltRounds);
+        user.password = hash;
+      }
+
+      user
+        .save()
+        .then((result) => {
+          res.json(result);
+        })
+        .catch((err) => {
+          console.log(err);
+          res.json({ error: err.message });
+        });
     }
-    const equalPassword = await bcrypt.compare(password, user.password);
-
-    if (!equalPassword) {
-      var hash = await bcrypt.hash(password, saltRounds);
-      user.password = hash;
-    }
-
-    user
-      .save()
-      .then((result) => {
-        res.json(result);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.json({ error: err.message });
-      });
+  } catch (e) {
+    console.log(e);
+    res.json({ error: e.message });
   }
 });
 

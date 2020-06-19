@@ -16,6 +16,7 @@ const discountRouter = require('./routes/discount');
 const invoicesRouter = require('./routes/invoices');
 const subjectsRouter = require('./routes/subjects');
 const cartRouter = require('./routes/cart');
+const notiRouter = require('./routes/notifications');
 
 require('dotenv').config();
 const app = express();
@@ -56,5 +57,6 @@ app.use('/discount', discountRouter);
 app.use('/feedback', feedbackRouter);
 app.use('/comment', commentsRouter);
 app.use('/cart', cartRouter);
+app.use('/notification', notiRouter);
 
 module.exports = app;

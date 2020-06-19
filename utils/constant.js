@@ -9,8 +9,9 @@ module.exports = {
     USERNAME_EMAIL: 'dhtc.kltn@gmail.com',
     PASSWORD_EMAIL: 'HaiTom!1',
     EMAIL_SECRET: "email_secret",
-    URL_CLIENT: "https://localhost:3001",
-    URL_ADMIN: "https://localhost:3002",
-    // URL_CLIENT: "https://cafocc.web.app",
-    // URL_ADMIN: "https://cafocc-cms.web.app",
+    PAGE_ACCESS_TOKEN: "EAAEJXbRQ95wBALO2qEnFrMca1bMKrOZA4HG6lz7BZAAdx6na4qLJzRREqZBjBny0edBnNstaAulcXvok60Om2d5mVedL0g1Yb6LPeXMeZBh10XZCsXq6qpRVor6Kand28cWNpD5RgbniryR5fgSiREjBjRuBXU2Naq9aAucd8tehOpG5T6h3x",
+    // URL_CLIENT: "https://localhost:3001",
+    // URL_ADMIN: "https://localhost:3002",
+    URL_CLIENT: "https://cafocc.web.app",
+    URL_ADMIN: "https://cafocc-cms.web.app",
 }

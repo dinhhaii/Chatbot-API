@@ -7,6 +7,7 @@ const constant = require('../utils/constant');
 const nodemailer = require("nodemailer");
 const passwordGenerator = require('generate-password');
 const queryString = require('query-string');
+const mongoose = require('mongoose');
 
 let User = require('../models/user');
 
@@ -57,13 +58,13 @@ passport.authenticate(
       req.login(user, { session: false }, (err) => {
         const query = { ...user, _id: user._id.toString() };
         if (err) {
-          res.json({ message: err });
+          res.json({ error: err });
         }
         const redirectURL = `${constant.URL_CLIENT}/auth/login?${queryString.stringify(query)}`;
         res.redirect(redirectURL);
       });
     } else {
-      return res.json({ message: "User not found!" });
+      return res.json({ error: "User not found!" });
     }
   }
 )(req, res);
@@ -71,11 +72,20 @@ passport.authenticate(
 
 // Get all users
 router.get("/", async (req, res) => {
+  const { email } = req.query;
   try {
-    let list = await User.find();
-    res.json(list);
+    if (email) {
+      let user = await User.findOne({ email });
+      if (user) {
+        res.json(user);
+      }
+      res.json({ error: "User not found "});
+    } else {
+      let list = await User.find();
+      res.json(list);
+    }
   } catch (e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -86,7 +96,7 @@ router.get('/all-learners', async (req, res) => {
     let list = await User.find({role: 'learner'});
     res.json(list);
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -96,7 +106,7 @@ router.get('/all-lecturers', async (req, res) => {
     let list = await User.find({role: 'lecturer'});
     res.json(list);
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -123,16 +133,14 @@ router.post('/login', function (req, res, next) {
 
 // User Registers
 router.post("/register", async (req, res) => {
-  var { email, password, firstName, lastName, role, imageURL } = req.body;
-  if (!imageURL) {
-    imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
-  }
+  var { email, password, firstName, lastName, role, imageURL, idFacebook, status } = req.body;
 
   try {
     const saltRounds = 10;
-    const user = await User.findOne({ email: email });
-  
-    if (user) {
+    const user = await User.findOne({ email });
+    const fbUser = await User.findOne({ idFacebook })
+
+    if (user || fbUser) {
       res.json({ error: "This user has already existed" });
     } else {
       const hash = await bcrypt.hash(password, saltRounds);
@@ -142,12 +150,16 @@ router.post("/register", async (req, res) => {
         firstName,
         lastName,
         role,
-        imageURL,
-        "",
-        "unverified",
+        imageURL || `${req.protocol}://${req.get("host")}/images/no-avatar.png`,
+        idFacebook || "",
+        status || "unverified",
         ""
       );
-      res.send(user);
+      const newUser = {
+        ...user,
+        token: jwtExtension.sign(JSON.stringify(user), constant.JWT_SECRET),
+      };
+      res.send(newUser);
     }
   } catch(err) {
     console.log(err);
@@ -179,7 +191,7 @@ router.post('/forgot-password', async (req, res) => {
       var mailOptions = {
         from: constant.USERNAME_EMAIL,
         to: email,
-        subject: '[CAFOCC] - EMAIL VERIFICATION',
+        subject: '[Hacademy] - EMAIL VERIFICATION',
         html: `Please click the link to confirm: <a href="${url}">${url}</a>
           <p>The link will be expired in 24h.</p>`,
         expire: '1d'
@@ -230,7 +242,7 @@ router.post('/verify', async (req, res) => {
     var mailOptions = {
       from: constant.USERNAME_EMAIL,
       to: email,
-      subject: '[CAFOCC] - ACCOUNT VERIFICATION',
+      subject: '[Hacademy] - ACCOUNT VERIFICATION',
       html: `Please click the link to confirm: <a href="${url}">${url}</a>
         <p>The link will be expired in 24h.</p>`,
       expire: '1d'
@@ -245,38 +257,51 @@ router.post('/verify', async (req, res) => {
       }
     });
   } catch(e) {
-    res.json(error);
+    res.json({ error: e.message });
   };
 });
 
 
 // Update User info
-router.post('/update', async (req, res) => {
+router.post("/update", async (req, res) => {
   var { _idUser, password } = req.body;
   const saltRounds = 10;
-  var user = await User.findById({ _id: _idUser });
+  try {
+    var user = await User.findById({ _id: _idUser });
 
-  if (user) {
-    for (var key in req.body) {
-      if (user[key] === req.body[key]||(key==="password")) continue;
-      user[key] = req.body[key];
+    if (user) {
+      for (var key in req.body) {
+        if (user[key] === req.body[key] || key === "password") continue;
+        user[key] = req.body[key];
+      }
+
+      if (password) {
+        const equalPassword = await bcrypt.compare(password, user.password);
+        if (!equalPassword) {
+          var hash = await bcrypt.hash(password, saltRounds);
+          user.password = hash;
+        }
+      }
+
+      user
+        .save()
+        .then((result) => {
+          const newUser = {
+            ...result._doc,
+            token: jwtExtension.sign(JSON.stringify(result._doc), constant.JWT_SECRET)
+          };
+          res.json(newUser);
+        })
+        .catch((err) => {
+          console.log(err);
+          res.json({ error: err.message });
+        });
+    } else {
+      res.json({ error: "User not found." });
     }
-    const equalPassword = await bcrypt.compare(password, user.password);
-
-    if (!equalPassword) {
-      var hash = await bcrypt.hash(password, saltRounds);
-      user.password = hash;
-    }
-
-    user
-      .save()
-      .then((result) => {
-        res.json(result);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.json({ error: err.message });
-      });
+  } catch (e) {
+    console.log(e);
+    res.json({ error: e.message });
   }
 });
 
@@ -284,9 +309,12 @@ router.post('/update', async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    let user = await User.findById(id);
+    let user = await User.findById(mongoose.Schema.Types.ObjectId(id));
+    if (!user) {
+      user = await User.findOne({ idFacebook: id });
+    }
     res.json(user);
-  } catch (e) {
+  } catch (err) {
     res.json({ error: err.message });
   }
 });

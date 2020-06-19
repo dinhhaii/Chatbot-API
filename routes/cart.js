@@ -189,5 +189,47 @@ router.post('/add-coupon', async (req, res) => {
   }
 });
 
+router.post('/remove-course', async (req, res) => {
+  const { idUser, _idCourse } = req.body;
+  try {
+    let cart = await Cart.findOne({ _idUser: idUser });
+    const index = cart.items.findIndex(value => value._idCourse === _idCourse);
+
+    cart.items.splice(index, 1);
+    const result = await cart.save();
+    res.json(result);
+    
+  } catch (e) {
+    console.log(e);
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.post('/add-course', async (req, res) => {
+  const { idUser, _idCourse } = req.body;
+  try {
+    let cart = await Cart.findOne({ _idUser: idUser });
+    let discounts = await Discount.find({ _idCourse });
+    let availableDiscount;
+    discounts.forEach(element => {
+      if (element.status === "available" && !element.isDelete) {
+        availableDiscount = element;
+      }
+    })
+
+    cart.items.push({
+      _idCourse,
+      _idDiscount: availableDiscount && availableDiscount._id
+    });
+
+    const result = await cart.save();
+    res.json(result);
+    
+  } catch (e) {
+    console.log(e);
+    res.status(400).json({ error: e.message });
+  }
+});
+
 
 module.exports = router;

@@ -7,6 +7,7 @@ const Lesson = require('../models/lesson');
 const Invoice = require('../models/invoice');
 const Comment = require('../models/comment');
 const Cart = require('../models/cart');
+const Survey = require('../models/survey');
 
 const mongoose = require("mongoose");
 
@@ -266,6 +267,29 @@ module.exports = {
     return cart._doc;
   },
 
+  createSurvey: (
+    _idUser,
+    rate,
+    content,
+    isDelete
+  ) => {
+    var survey = new Survey({
+      _id: new mongoose.Types.ObjectId(),
+      _idUser: _idUser,
+      rate: rate,
+      content: content,
+      isDelete: isDelete
+    });
+    survey
+      .save()
+      .then(result => {
+        return result;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    return survey._doc;
+  },
 
 // ----------------------------------------------------------------
 // ------------------------------------------------------------------

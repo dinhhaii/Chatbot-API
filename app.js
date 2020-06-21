@@ -5,6 +5,7 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const constant = require('./utils/constant');
+const initial = require('./utils/initial');
 
 const usersRouter = require('./routes/users');
 const indexRouter = require('./routes/index');
@@ -61,5 +62,8 @@ app.use('/comment', commentsRouter);
 app.use('/cart', cartRouter);
 app.use('/notification', notiRouter);
 app.use('/survey', surveyRouter);
+
+// Initialize data
+initial.initTimers();
 
 module.exports = app;

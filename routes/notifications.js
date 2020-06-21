@@ -35,8 +35,9 @@ router.post('/start-date', async (req, res) => {
     for (let course of listCourses) {
       var date = moment(course.startDate).date();
       var month = moment(course.startDate).month();
+      var year = moment(course.startDate).year()
 
-      var scheduledDate = new Date(2020, month, date, 0, 0, 0);
+      var scheduledDate = new Date(year, month, date, 0, 0, 0);
       var scheduleName = `Start date notification for ${user._id}`
 
       var j = schedule.scheduleJob(scheduleName, scheduledDate, function(){

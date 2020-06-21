@@ -7,6 +7,7 @@ const Lesson = require('../models/lesson');
 const Invoice = require('../models/invoice');
 const Comment = require('../models/comment');
 const Cart = require('../models/cart');
+const Timer = require('../models/timer');
 
 const mongoose = require("mongoose");
 
@@ -266,10 +267,50 @@ module.exports = {
     return cart._doc;
   },
 
+  createTimer: (
+    _idUser,
+    _idCourse,
+    name,
+    time,
+    days,
+    status
+  ) => {
+    var timer = new Timer({
+      _id: new mongoose.Types.ObjectId(),
+      _idUser: _idUser,
+      _idCourse: _idCourse,
+      name: name,
+      time: time,
+      days: days,
+      status: status
+    });
+    timer
+      .save()
+      .then(result => {
+        return result;
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    return timer._doc;
+  },
+
 
 // ----------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------------------
+  toTimerObject: timer => {
+    return {
+      _id: timer._id,
+      _idUser: timer._idUser,
+      _idCourse: timer._idCourse,
+      name: timer.name,
+      time: timer.time,
+      days: timer.days,
+      status: timer.status
+    }
+  },
+
   toCourseObject: course => {
     return {
       _id: course._id,

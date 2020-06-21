@@ -73,12 +73,14 @@ router.post('/start-date', async (req, res) => {
 // Create timer
 router.post('/create-timer', async (req, res) => {
   try {
-    const { _idUser, _idCourse, name, time, days } = req.body;
+    const { _idUser, _idCourse, time, days } = req.body;
+
+    const scheduleName = `Timer for ${_idUser}`
 
     let timer = await modelGenerator.createTimer(
       _idUser,
       _idCourse,
-      name,
+      scheduleName,
       time,
       days,
       'available'
@@ -91,8 +93,6 @@ router.post('/create-timer', async (req, res) => {
     rule.dayOfWeek = days;
     rule.hour = time.split(':')[0];
     rule.minute = time.split(':')[1];
-
-    var scheduleName = `Timer for ${_idUser}`
 
     var j = schedule.scheduleJob(scheduleName, rule, function(){
       var transporter = nodemailer.createTransport({
@@ -138,14 +138,13 @@ router.post('/update-timer', async (req, res) => {
     {
       for (let key in req.body)
       {
-        if (key === 'status')
+        if (key === 'status' && req.body[key] === 'canceled')
         {
-          var scheduleName = `Timer for ${_idUser}`;
-          console.log(`Cancel schedule ${scheduleName}: `+ eval(`schedule.scheduledJobs['${scheduleName}'].cancel()`));
+          console.log(`Cancel schedule ${timer.name}: `+ eval(`schedule.scheduledJobs['${timer.name}'].cancel()`));
         }
         timer[key] = req.body[key];
       }
-      course
+      timer
         .save()
         .then(result => res.json(result))
         .catch (err => console.log(err));

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const schedule = require('node-schedule');
 const nodemailer = require("nodemailer");
 const moment = require('moment');
-const mongoose = require('mongoose');
+const axios = require('axios');
 const modelGenerator = require('../utils/model-generator');
 const constant = require('../utils/constant');
 
@@ -104,7 +104,30 @@ router.post('/create-timer', async (req, res) => {
 
     var j = schedule.scheduleJob(scheduleName, rule, function () {
       // Send Messenger
-
+      const requestBody = {
+        recipient: {
+          id: user.idFacebook,
+        },
+        message: {
+          attachment: {
+            type: "template",
+            payload: {
+              template_type: "button",
+              text: `Reminder for the course (${course.name}) you're taking!`,
+              buttons: [
+                { 
+                  title: "Course Detail",
+                  type: "web_url",
+                  url: `${constant.URL_CLIENT}/course-detail/${course._id}`
+                }
+              ],
+            }
+          }
+        }
+      };
+      
+      axios.post(`${constant.PLATFORM_FACEBOOK_URL}/me/messages?access_token=${constant.PAGE_ACCESS_TOKEN}`, requestBody)
+        .then(response => console.log(response.data));
       // Send email
       var transporter = nodemailer.createTransport({
         service: "gmail",

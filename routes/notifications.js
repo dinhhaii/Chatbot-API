@@ -2,7 +2,7 @@ const router = require('express').Router();
 const schedule = require('node-schedule');
 const nodemailer = require("nodemailer");
 const moment = require('moment');
-
+const mongoose = require('mongoose');
 const modelGenerator = require('../utils/model-generator');
 const constant = require('../utils/constant');
 
@@ -72,16 +72,26 @@ router.post('/start-date', async (req, res) => {
 router.post('/create-timer', async (req, res) => {
   try {
     const { _idUser, _idInvoice, time, days } = req.body;
+
+    let timer = await Timer.findOne({ _idUser, _idInvoice });
     const scheduleName = `Timer for ${_idUser}`
 
-    let timer = await modelGenerator.createTimer(
-      _idUser,
-      _idInvoice,
-      scheduleName,
-      time,
-      days,
-      'available'
-    );
+    if (timer) {
+      timer.time = time;
+      timer.days = days;
+      timer.status = 'available';
+      await timer.save();
+
+    } else {
+      timer = await modelGenerator.createTimer(
+        _idUser,
+        _idInvoice,
+        scheduleName,
+        time,
+        days,
+        'available'
+      );
+    }
 
     const invoice = await Invoice.findById(_idInvoice);
     const user = await User.findById(_idUser);
@@ -89,38 +99,39 @@ router.post('/create-timer', async (req, res) => {
 
     var rule = new schedule.RecurrenceRule();
     rule.dayOfWeek = days;
-    rule.hour = time.split(':')[0];
-    rule.minute = time.split(':')[1];
+    rule.hour = time.split(":")[0];
+    rule.minute = time.split(":")[1];
 
-    var j = schedule.scheduleJob(scheduleName, rule, function(){
+    var j = schedule.scheduleJob(scheduleName, rule, function () {
       // Send Messenger
-
-
 
       // Send email
       var transporter = nodemailer.createTransport({
-        service: 'gmail',
+        service: "gmail",
         auth: {
           user: constant.USERNAME_EMAIL,
-          pass: constant.PASSWORD_EMAIL
-        }
+          pass: constant.PASSWORD_EMAIL,
+        },
       });
 
       var mailOptions = {
         from: constant.USERNAME_EMAIL,
         to: user.email,
         subject: `Hacademy Course - ${course.name}`,
-        text: `Reminder for the course (${course.name}) you're taking!\nCheck your course here: ${constant.URL_CLIENT}/course-detail/${course._id}`
+        text: `Reminder for the course (${course.name}) you're taking!\nCheck your course here: ${constant.URL_CLIENT}/course-detail/${course._id}`,
       };
       // Send e-mail
-      transporter.sendMail(mailOptions, function(error, info){
-          if (error) {
-            console.log(error);
-            res.json({ error: error.message });
-          } else {
-            console.log('Email sent: ' + info.response);
-            res.json({message: "Email was sent! (Check Spam section if you can't find it)"});
-          }
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+          res.json({ error: error.message });
+        } else {
+          console.log("Email sent: " + info.response);
+          res.json({
+            message:
+              "Email was sent! (Check Spam section if you can't find it)",
+          });
+        }
       });
     });
 
@@ -145,15 +156,14 @@ router.post("/update-timer", async (req, res) => {
         }
         timer[key] = req.body[key];
       }
-      timer
-        .save()
-        .then((result) => res.json(result))
-        .catch((err) => console.log(err));
+      const result = await timer.save()
+      res.json(result);
     } else {
-      res.json(null);
+      res.json({ error: "Timer not found." });
     }
   } catch (e) {
-    res.json(e);
+    console.log(e);
+    res.json({ error: e.message });
   }
 });
 

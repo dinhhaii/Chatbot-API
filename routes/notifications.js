@@ -9,11 +9,6 @@ const constant = require('../utils/constant');
 let Course = require('../models/course');
 let User = require('../models/user');
 let Invoice = require('../models/invoice');
-let Lesson = require('../models/lesson');
-let Feedback = require('../models/feedback');
-let Subject = require('../models/subject');
-let Discount = require('../models/discount');
-let Comment = require('../models/comment');
 let Timer = require('../models/timer');
 
 // Send Noti
@@ -59,6 +54,7 @@ router.post('/start-date', async (req, res) => {
         transporter.sendMail(mailOptions, function(error, info){
               if (error) {
                 console.log(error);
+                res.json({ error: error.message });
               } else {
                 console.log('Email sent: ' + info.response);
                 res.json({message: "Email was sent! (Check Spam section if you can't find it)"});
@@ -67,28 +63,29 @@ router.post('/start-date', async (req, res) => {
       });
     }
   } catch(e) {
-    res.json(e);
+    console.log(e);
+    res.json({ error: e.message });
   };
 });
 
 // Create timer
 router.post('/create-timer', async (req, res) => {
   try {
-    const { _idUser, _idCourse, time, days } = req.body;
-
+    const { _idUser, _idInvoice, time, days } = req.body;
     const scheduleName = `Timer for ${_idUser}`
 
     let timer = await modelGenerator.createTimer(
       _idUser,
-      _idCourse,
+      _idInvoice,
       scheduleName,
       time,
       days,
       'available'
     );
 
+    const invoice = await Invoice.findById(_idInvoice);
     const user = await User.findById(_idUser);
-    const course = await Course.findById(_idCourse);
+    const course = await Course.findById(invoice._idCourse);
 
     var rule = new schedule.RecurrenceRule();
     rule.dayOfWeek = days;
@@ -96,6 +93,11 @@ router.post('/create-timer', async (req, res) => {
     rule.minute = time.split(':')[1];
 
     var j = schedule.scheduleJob(scheduleName, rule, function(){
+      // Send Messenger
+
+
+
+      // Send email
       var transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -114,6 +116,7 @@ router.post('/create-timer', async (req, res) => {
       transporter.sendMail(mailOptions, function(error, info){
           if (error) {
             console.log(error);
+            res.json({ error: error.message });
           } else {
             console.log('Email sent: ' + info.response);
             res.json({message: "Email was sent! (Check Spam section if you can't find it)"});
@@ -123,38 +126,35 @@ router.post('/create-timer', async (req, res) => {
 
     res.json(timer);
   } catch(e) {
-    res.json(e);
+    console.log(e);
+    res.json({ error: e.message });
   };
 });
 
 
 // Update timer
-router.post('/update-timer', async (req, res) => {
+router.post("/update-timer", async (req, res) => {
   try {
-    const { _idUser, _idCourse } = req.body;
+    const { _idUser, _idInvoice } = req.body;
+    const timer = await Timer.findOne({ _idUser, _idInvoice });
 
-    const timer = await Timer.findOne({_idUser: _idUser, _idCourse: _idCourse});
-
-    if (timer)
-    {
-      for (let key in req.body)
-      {
-        if (key === 'status' && req.body[key] === 'canceled')
-        {
-          console.log(`Cancel schedule ${timer.name}: `+ eval(`schedule.scheduledJobs['${timer.name}'].cancel()`));
+    if (timer) {
+      for (let key in req.body) {
+        if (key === "status" && req.body[key] === "canceled") {
+          console.log(`Cancel schedule ${timer.name}: ` + eval(`schedule.scheduledJobs['${timer.name}'].cancel()`));
         }
         timer[key] = req.body[key];
       }
       timer
         .save()
-        .then(result => res.json(result))
-        .catch (err => console.log(err));
+        .then((result) => res.json(result))
+        .catch((err) => console.log(err));
     } else {
       res.json(null);
     }
-  } catch(e) {
+  } catch (e) {
     res.json(e);
-  };
+  }
 });
 
 

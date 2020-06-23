@@ -10,6 +10,7 @@ let Feedback = require('../models/feedback');
 let Subject = require('../models/subject');
 let Discount = require('../models/discount');
 let Comment = require('../models/comment');
+let Timer = require('../models/timer');
 
 // Get All Courses
 router.post('/', async (req, res) => {
@@ -146,6 +147,7 @@ router.get('/:id/enrolled', async (req, res) => {
       for(let invoice of invoices)
       {
         var course = await Course.findById(invoice._idCourse);
+        let timer = await Timer.findOne({ _idUser: studentID, _idInvoice: invoice._id });
         let lecturer = await User.findById(course._idLecturer);
         let feedback = await Feedback.findOne({ _idInvoice: invoice._id });
 
@@ -156,6 +158,7 @@ router.get('/:id/enrolled', async (req, res) => {
 
         const resultItem = {
           invoice: { ...invoice._doc },
+          timer,
           course: course,
           feedback,
         }

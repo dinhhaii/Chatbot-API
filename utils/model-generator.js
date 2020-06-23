@@ -270,7 +270,7 @@ module.exports = {
 
   createTimer: (
     _idUser,
-    _idCourse,
+    _idInvoice,
     name,
     time,
     days,
@@ -279,7 +279,7 @@ module.exports = {
     var timer = new Timer({
       _id: new mongoose.Types.ObjectId(),
       _idUser: _idUser,
-      _idCourse: _idCourse,
+      _idInvoice: _idInvoice,
       name: name,
       time: time,
       days: days,
@@ -327,7 +327,7 @@ module.exports = {
     return {
       _id: timer._id,
       _idUser: timer._idUser,
-      _idCourse: timer._idCourse,
+      _idInvoice: timer._idInvoice,
       name: timer.name,
       time: timer.time,
       days: timer.days,

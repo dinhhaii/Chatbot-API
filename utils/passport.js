@@ -50,7 +50,6 @@ const local = new LocalStrategy(
     passwordField: "password",
   },
   function (email, password, cb) {
-    //this one is typically a DB call. Assume that the returned user object is pre-formatted and ready for storing in JWT
     return User.findOne({ email: email })
       .then((user) => {
         if (!user) {
@@ -73,7 +72,7 @@ const google = new GoogleStrategy(
   {
     clientID: constant.GOOGLE_CLIENT_ID,
     clientSecret: constant.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/user/google/redirect",
+    callbackURL: `${constant.URL}/user/google/redirect`,
   },
   async function (accessToken, refreshToken, profile, done) {
     let { emails, name, photos } = profile;

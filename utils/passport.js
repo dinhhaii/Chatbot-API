@@ -121,7 +121,7 @@ const facebook = new FacebookStrategy(
   {
     clientID: constant.FACEBOOK_CLIENT_ID,
     clientSecret: constant.FACEBOOK_CLIENT_SECRET,
-    callbackURL: "/user/facebook/redirect",
+    callbackURL: `${constant.URL}/user/facebook/redirect`,
     profileFields: ["id", "first_name", "last_name", "photos", "email"],
   },
   async function (accessToken, refreshToken, profile, user, done) {

@@ -131,7 +131,7 @@ const facebook = new FacebookStrategy(
       const { data } = await axios.get(`https://graph.facebook.com/${id}/ids_for_pages?access_token=${constant.PAGE_ACCESS_TOKEN}&appsecret_proof=${appsecret_proof}`);
       if (!data.error) {
         const res = data.data.reduce((initVal, val) => val.page.name === "Hacademy" ? val : initVal, null);
-
+        console.log(data);
         const user = await User.findOne({ idFacebook: res.id });
         if (user) {
           let newUser = {

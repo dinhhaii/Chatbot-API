@@ -15,13 +15,14 @@ let Timer = require('../models/timer');
 // Get All Courses
 router.post('/', async (req, res) => {
   const { search, popular, offset, limit } = req.body;
+
   try {
     const pipelines = [];
     if (search && search.length !== 0) {
       pipelines.push(
         { $match: { $text: { $search: search }, isDelete: false }},
         { $sort: { score: { $meta: "textScore" }}});
-    } else if (popular) {
+    } else if (popular != 0) {
       pipelines.push({ $match: { isDelete: false }});
     } else {
       pipelines.push(
@@ -50,7 +51,7 @@ router.post('/', async (req, res) => {
         console.log(err);
         res.json({ error: err.message });
       }
-      if (popular) {
+      if (popular != 0) {
         res.json(result.sort((a, b) => {
           const rateA = a.feedback.reduce((init, value) => init + value.rate, 0) / a.feedback.length;
           const rateB = b.feedback.reduce((init, value) => init + value.rate, 0) / b.feedback.length;

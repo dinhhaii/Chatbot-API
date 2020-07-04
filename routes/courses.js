@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const modelGenerator = require('../utils/model-generator');
+const mongoose = require('mongoose');
 const constant = require('../utils/constant');
 
 let Course = require('../models/course');
@@ -11,6 +12,7 @@ let Subject = require('../models/subject');
 let Discount = require('../models/discount');
 let Comment = require('../models/comment');
 let Timer = require('../models/timer');
+let Cart = require('../models/cart');
 
 // Get All Courses
 router.post('/', async (req, res) => {
@@ -64,6 +66,86 @@ router.post('/', async (req, res) => {
   } catch(e) {
     console.log(e);
     res.json({ error: e.message });
+  }
+});
+
+router.post('/suggestion', async (req, res) => {
+  let { searchHistory, _idUser } = req.body;
+  searchHistory = JSON.parse(searchHistory).slice(0,3);
+
+  const pipelines = [
+    { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+    { $lookup: { from: 'lessons', localField: '_id', foreignField: '_idCourse', as: 'lessons' }},
+    { $lookup: { from: 'discounts', localField: '_id', foreignField: '_idCourse', as: 'discount' }},
+    { $lookup: { from: 'users', localField: '_idLecturer', foreignField: '_id', as: 'lecturer' }},
+    { $lookup: { from: 'subjects', localField: '_idSubject', foreignField: '_id', as: 'subject' }},
+    { $unwind: '$lecturer' },
+    { $unwind: '$subject' },
+    { $skip: 0 },
+    { $limit: 10 }
+  ]
+
+  try {
+    let courses = [];
+
+    if (searchHistory.length !== 0) {
+      for (let search of searchHistory) {
+        const result = await Course.aggregate([
+          { $match: { $text: { $search: search }, isDelete: false }},
+          { $sort: { score: { $meta: "textScore" }}},
+          ...pipelines
+        ])
+        if (result.length !== 0) {
+          courses = [...courses, ...result];
+        }
+      }
+    } 
+
+    const cart = await Cart.findOne({ _idUser });
+    if (cart.items.length !== 0 && courses.length === 0) {
+      for(let item of cart.items) {
+        const { _idCourse } = item;
+        const course = await Course.findById(_idCourse);
+        if (course) {
+          const result = await Course.aggregate([
+            { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+            ...pipelines
+          ])
+          if (result.length !== 0) {
+            courses = [...result];
+            break;
+          }
+        }
+      }
+    }
+    const invoices = await Invoice.find({ _idUser });
+    if (invoices.length !== 0 && courses.length === 0) {
+      for(let invoice of invoices) {
+        const { _idCourse } = invoice;
+        const course = await Course.findById(_idCourse);
+        if (course) {
+          const result = await Course.aggregate([
+            { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+            ...pipelines
+          ])
+          if (result.length !== 0) {
+            courses = [...result];
+            break;
+          }
+        }
+      }
+    }
+    if (courses.length === 0) {
+      const result = await Course.aggregate([
+        { $match: { isDelete: false }},
+        ...pipelines
+      ]);
+      courses = [...result];
+    }
+    res.json(courses.slice(0, 10));
+  } catch(e) {
+    console.log(e);
+    return res.json({ error: e.message });
   }
 });
 

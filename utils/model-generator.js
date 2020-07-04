@@ -9,6 +9,7 @@ const Comment = require('../models/comment');
 const Cart = require('../models/cart');
 const Timer = require('../models/timer');
 const Survey = require('../models/survey');
+const Progress = require('../models/progress');
 
 const mongoose = require("mongoose");
 
@@ -318,6 +319,24 @@ module.exports = {
         console.log(err);
       });
     return survey._doc;
+  },
+
+  createProgress: (_idUser, played, isDelete) => {
+    var progress = new Progress({
+      _id: new mongoose.Types.ObjectId(),
+      _idUser,
+      played,
+      isDelete,
+    });
+    progress
+      .save()
+      .then(result => {
+        return result;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    return progress._doc;
   },
 
 // ----------------------------------------------------------------

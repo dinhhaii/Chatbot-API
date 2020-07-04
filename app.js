@@ -19,7 +19,7 @@ const subjectsRouter = require('./routes/subjects');
 const cartRouter = require('./routes/cart');
 const notiRouter = require('./routes/notifications');
 const surveyRouter = require('./routes/survey');
-
+const progressRouter = require('./routes/progress');
 
 require('dotenv').config();
 const app = express();
@@ -62,6 +62,8 @@ app.use('/comment', commentsRouter);
 app.use('/cart', cartRouter);
 app.use('/notification', notiRouter);
 app.use('/survey', surveyRouter);
+app.use('/progress', progressRouter);
+
 
 // Initialize data
 initial.initTimers();

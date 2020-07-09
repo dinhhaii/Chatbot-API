@@ -176,7 +176,8 @@ router.get('/pending', async (req, res) => {
 
     res.json(result);
   } catch (e) {
-    res.status(400).json(e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -212,7 +213,8 @@ router.get('/:id', async (req, res) => {
       res.json(null);
     }
   } catch (e) {
-    res.status(400).json('Error: ' + e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -251,7 +253,8 @@ router.get('/:id/enrolled', async (req, res) => {
     }
     res.json(listCourses);
   } catch (e) {
-    res.status(400).json(e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -284,7 +287,8 @@ router.get('/:id/teaching', async (req, res) => {
 
     res.json(result);
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 

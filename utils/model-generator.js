@@ -9,6 +9,7 @@ const Comment = require('../models/comment');
 const Cart = require('../models/cart');
 const Timer = require('../models/timer');
 const Survey = require('../models/survey');
+const Progress = require('../models/progress');
 
 const mongoose = require("mongoose");
 
@@ -270,7 +271,7 @@ module.exports = {
 
   createTimer: (
     _idUser,
-    _idCourse,
+    _idInvoice,
     name,
     time,
     days,
@@ -279,7 +280,7 @@ module.exports = {
     var timer = new Timer({
       _id: new mongoose.Types.ObjectId(),
       _idUser: _idUser,
-      _idCourse: _idCourse,
+      _idInvoice: _idInvoice,
       name: name,
       time: time,
       days: days,
@@ -320,6 +321,24 @@ module.exports = {
     return survey._doc;
   },
 
+  createProgress: (_idUser, played, isDelete) => {
+    var progress = new Progress({
+      _id: new mongoose.Types.ObjectId(),
+      _idUser,
+      played,
+      isDelete,
+    });
+    progress
+      .save()
+      .then(result => {
+        return result;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    return progress._doc;
+  },
+
 // ----------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------------------
@@ -327,7 +346,7 @@ module.exports = {
     return {
       _id: timer._id,
       _idUser: timer._idUser,
-      _idCourse: timer._idCourse,
+      _idInvoice: timer._idInvoice,
       name: timer.name,
       time: timer.time,
       days: timer.days,

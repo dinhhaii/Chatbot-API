@@ -123,8 +123,6 @@ router.post('/login', function (req, res, next) {
            if (err) {
                res.send(err);
            }
-           // generate a signed json web token with the contents of user object and return it in the response
-
            const token = jwtExtension.sign(user.toJSON(), constant.JWT_SECRET);
            return res.json({user, token});
         });
@@ -134,7 +132,7 @@ router.post('/login', function (req, res, next) {
 // User Registers
 router.post("/register", async (req, res) => {
   var { email, password, firstName, lastName, role, imageURL, idFacebook, status } = req.body;
-
+  console.log(password);
   try {
     const saltRounds = 10;
     const user = await User.findOne({ email });

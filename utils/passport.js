@@ -50,7 +50,6 @@ const local = new LocalStrategy(
     passwordField: "password",
   },
   function (email, password, cb) {
-    //this one is typically a DB call. Assume that the returned user object is pre-formatted and ready for storing in JWT
     return User.findOne({ email: email })
       .then((user) => {
         if (!user) {
@@ -73,7 +72,7 @@ const google = new GoogleStrategy(
   {
     clientID: constant.GOOGLE_CLIENT_ID,
     clientSecret: constant.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/user/google/redirect",
+    callbackURL: `${constant.URL}/user/google/redirect`,
   },
   async function (accessToken, refreshToken, profile, done) {
     let { emails, name, photos } = profile;
@@ -121,7 +120,7 @@ const facebook = new FacebookStrategy(
   {
     clientID: constant.FACEBOOK_CLIENT_ID,
     clientSecret: constant.FACEBOOK_CLIENT_SECRET,
-    callbackURL: "/user/facebook/redirect",
+    callbackURL: `${constant.URL}/user/facebook/redirect`,
     profileFields: ["id", "first_name", "last_name", "photos", "email"],
   },
   async function (accessToken, refreshToken, profile, user, done) {
@@ -131,7 +130,7 @@ const facebook = new FacebookStrategy(
       const { data } = await axios.get(`https://graph.facebook.com/${id}/ids_for_pages?access_token=${constant.PAGE_ACCESS_TOKEN}&appsecret_proof=${appsecret_proof}`);
       if (!data.error) {
         const res = data.data.reduce((initVal, val) => val.page.name === "Hacademy" ? val : initVal, null);
-
+        console.log(data);
         const user = await User.findOne({ idFacebook: res.id });
         if (user) {
           let newUser = {

@@ -4,7 +4,7 @@ const timerSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
     _idUser: mongoose.Schema.Types.ObjectId,
-    _idCourse: mongoose.Schema.Types.ObjectId,
+    _idInvoice: mongoose.Schema.Types.ObjectId,
     name: {
       type: String,
       require: true,

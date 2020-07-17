@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const modelGenerator = require('../utils/model-generator');
+const mongoose = require('mongoose');
 const constant = require('../utils/constant');
 
 let Course = require('../models/course');
@@ -128,6 +129,34 @@ router.post('/lecturer', async (req, res) => {
     res.json(result);
   } catch(e) {
     res.status(400).json('Error: ' + e);
+  }
+});
+
+router.post('/learner-lesson', async (req, res) => {
+  try {
+    const { _idUser, _idLesson } = req.body;
+    const lesson = await Lesson.findById({ _id: _idLesson });
+    if (!lesson) {
+      res.json({ error: "Lesson not found" });
+    }
+
+    Invoice.aggregate([
+      { $match: {
+        _idUser: mongoose.Types.ObjectId(_idUser),
+        _idCourse: mongoose.Types.ObjectId(lesson._idCourse), 
+        status: "success"
+      }},
+      { $lookup: { from: 'courses', localField: '_idCourse', foreignField: '_id', as: 'course' }},
+      { $unwind: '$course' },
+    ]).exec((err, result) => {
+      if (err) {
+        res.json({ error: err.message });
+      }
+      res.json(result);
+    })
+  } catch(e) {
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 

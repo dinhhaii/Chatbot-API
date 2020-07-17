@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const modelGenerator = require('../utils/model-generator');
+const mongoose = require('mongoose');
 const constant = require('../utils/constant');
 
 let Course = require('../models/course');
@@ -10,17 +11,20 @@ let Feedback = require('../models/feedback');
 let Subject = require('../models/subject');
 let Discount = require('../models/discount');
 let Comment = require('../models/comment');
+let Timer = require('../models/timer');
+let Cart = require('../models/cart');
 
 // Get All Courses
 router.post('/', async (req, res) => {
   const { search, popular, offset, limit } = req.body;
+
   try {
     const pipelines = [];
     if (search && search.length !== 0) {
       pipelines.push(
         { $match: { $text: { $search: search }, isDelete: false }},
         { $sort: { score: { $meta: "textScore" }}});
-    } else if (popular) {
+    } else if (popular != 0) {
       pipelines.push({ $match: { isDelete: false }});
     } else {
       pipelines.push(
@@ -49,7 +53,7 @@ router.post('/', async (req, res) => {
         console.log(err);
         res.json({ error: err.message });
       }
-      if (popular) {
+      if (popular != 0) {
         res.json(result.sort((a, b) => {
           const rateA = a.feedback.reduce((init, value) => init + value.rate, 0) / a.feedback.length;
           const rateB = b.feedback.reduce((init, value) => init + value.rate, 0) / b.feedback.length;
@@ -62,6 +66,86 @@ router.post('/', async (req, res) => {
   } catch(e) {
     console.log(e);
     res.json({ error: e.message });
+  }
+});
+
+router.post('/suggestion', async (req, res) => {
+  let { searchHistory, _idUser } = req.body;
+  searchHistory = JSON.parse(searchHistory).slice(0,3);
+
+  const pipelines = [
+    { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+    { $lookup: { from: 'lessons', localField: '_id', foreignField: '_idCourse', as: 'lessons' }},
+    { $lookup: { from: 'discounts', localField: '_id', foreignField: '_idCourse', as: 'discount' }},
+    { $lookup: { from: 'users', localField: '_idLecturer', foreignField: '_id', as: 'lecturer' }},
+    { $lookup: { from: 'subjects', localField: '_idSubject', foreignField: '_id', as: 'subject' }},
+    { $unwind: '$lecturer' },
+    { $unwind: '$subject' },
+    { $skip: 0 },
+    { $limit: 10 }
+  ]
+
+  try {
+    let courses = [];
+
+    if (searchHistory.length !== 0) {
+      for (let search of searchHistory) {
+        const result = await Course.aggregate([
+          { $match: { $text: { $search: search }, isDelete: false }},
+          { $sort: { score: { $meta: "textScore" }}},
+          ...pipelines
+        ])
+        if (result.length !== 0) {
+          courses = [...courses, ...result];
+        }
+      }
+    } 
+
+    const cart = await Cart.findOne({ _idUser });
+    if (cart.items.length !== 0 && courses.length === 0) {
+      for(let item of cart.items) {
+        const { _idCourse } = item;
+        const course = await Course.findById(_idCourse);
+        if (course) {
+          const result = await Course.aggregate([
+            { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+            ...pipelines
+          ])
+          if (result.length !== 0) {
+            courses = [...result];
+            break;
+          }
+        }
+      }
+    }
+    const invoices = await Invoice.find({ _idUser });
+    if (invoices.length !== 0 && courses.length === 0) {
+      for(let invoice of invoices) {
+        const { _idCourse } = invoice;
+        const course = await Course.findById(_idCourse);
+        if (course) {
+          const result = await Course.aggregate([
+            { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+            ...pipelines
+          ])
+          if (result.length !== 0) {
+            courses = [...result];
+            break;
+          }
+        }
+      }
+    }
+    if (courses.length === 0) {
+      const result = await Course.aggregate([
+        { $match: { isDelete: false }},
+        ...pipelines
+      ]);
+      courses = [...result];
+    }
+    res.json(courses.slice(0, 10));
+  } catch(e) {
+    console.log(e);
+    return res.json({ error: e.message });
   }
 });
 
@@ -92,7 +176,8 @@ router.get('/pending', async (req, res) => {
 
     res.json(result);
   } catch (e) {
-    res.status(400).json(e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -128,7 +213,8 @@ router.get('/:id', async (req, res) => {
       res.json(null);
     }
   } catch (e) {
-    res.status(400).json('Error: ' + e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -146,6 +232,7 @@ router.get('/:id/enrolled', async (req, res) => {
       for(let invoice of invoices)
       {
         var course = await Course.findById(invoice._idCourse);
+        let timer = await Timer.findOne({ _idUser: studentID, _idInvoice: invoice._id });
         let lecturer = await User.findById(course._idLecturer);
         let feedback = await Feedback.findOne({ _idInvoice: invoice._id });
 
@@ -156,6 +243,7 @@ router.get('/:id/enrolled', async (req, res) => {
 
         const resultItem = {
           invoice: { ...invoice._doc },
+          timer,
           course: course,
           feedback,
         }
@@ -165,7 +253,8 @@ router.get('/:id/enrolled', async (req, res) => {
     }
     res.json(listCourses);
   } catch (e) {
-    res.status(400).json(e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -198,7 +287,8 @@ router.get('/:id/teaching', async (req, res) => {
 
     res.json(result);
   } catch(e) {
-    res.status(400).json('Error: ' + e);
+    console.log(e);
+    res.status(400).json({ error: e.message });
   }
 });
 

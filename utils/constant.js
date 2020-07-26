@@ -13,8 +13,8 @@ module.exports = {
     PLATFORM_FACEBOOK_URL: "https://graph.facebook.com/v7.0",
     URL_CLIENT: "https://localhost:3001",
     URL_ADMIN: "https://localhost:3002",
-    URL: "http://localhost:3000",
-    // URL: "https://hacademy-api.herokuapp.com",
+    // URL: "http://localhost:3000",
+    URL: "https://hacademy-api.herokuapp.com",
     // URL_CLIENT: "https://cafocc.web.app",
     // URL_ADMIN: "https://cafocc-cms.web.app",
 }

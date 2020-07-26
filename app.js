@@ -29,8 +29,7 @@ require('./utils/passport');
 
 const port = process.env.PORT || 3000;
 
-mongoose.connect(constant.CONNECTION_STRING, { useNewUrlParser: true,
-                        useUnifiedTopology: true, useCreateIndex: true });
+mongoose.connect(constant.CONNECTION_STRING, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
 const connection = mongoose.connection;
 connection.once('open', () => {
   console.log("Cafocc MongoDB connection established successfully");

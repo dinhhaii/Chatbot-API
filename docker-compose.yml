@@ -28,3 +28,13 @@ services:
             - 3002:3000
         depends_on: 
             - be-hacademy
+    chatbot-hacademy:
+        stdin_open: true
+        build: ../OnlineCourses-Chatbot
+        volumes: 
+            - /usr/src/chatbot-hacademy/node_modules
+            - ../OnlineCourses-Chatbot:/usr/src/chatbot-hacademy
+        ports:
+            - 3003:3000
+        depends_on: 
+            - be-hacademy

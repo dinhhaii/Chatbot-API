@@ -211,19 +211,29 @@ router.post('/add-course', async (req, res) => {
     let cart = await Cart.findOne({ _idUser: idUser });
     let discounts = await Discount.find({ _idCourse });
     let availableDiscount;
+    if (!cart) {
+      await modelGenerator.createCart(idUser, []);
+      cart = await Cart.findOne({ _idUser: idUser });
+    }
+
     discounts.forEach(element => {
       if (element.status === "available" && !element.isDelete) {
         availableDiscount = element;
       }
     })
 
-    cart.items.push({
-      _idCourse,
-      _idDiscount: availableDiscount && availableDiscount._id
-    });
+    const course = cart.items.find(value => value._idCourse === _idCourse);
+    if (course) {
+      res.json({ error: 'Your course have been already added '});
+    } else {
+      cart.items.push({
+        _idCourse,
+        _idDiscount: availableDiscount && availableDiscount._id
+      });
+      const result = await cart.save();
+      res.json(result);
+    }
 
-    const result = await cart.save();
-    res.json(result);
     
   } catch (e) {
     console.log(e);

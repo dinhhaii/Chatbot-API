@@ -32,6 +32,10 @@ const courseSchema = mongoose.Schema({
     type: Number,
     require: true
   },
+  level: {
+    type: Number,
+    require: true
+  },
   status: {
     type: String,
     require: false

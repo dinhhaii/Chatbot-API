@@ -99,7 +99,7 @@ router.post('/suggestion', async (req, res) => {
           courses = [...courses, ...result];
         }
       }
-    } 
+    }
 
     const cart = await Cart.findOne({ _idUser });
     if (cart.items.length !== 0 && courses.length === 0) {
@@ -141,8 +141,11 @@ router.post('/suggestion', async (req, res) => {
         ...pipelines
       ]);
       courses = [...result];
+      return res.json(result.slice(0, 5));
     }
-    res.json(courses.slice(0, 10));
+    else {
+      res.json(courses.slice(0, 5));
+    }
   } catch(e) {
     console.log(e);
     return res.json({ error: e.message });

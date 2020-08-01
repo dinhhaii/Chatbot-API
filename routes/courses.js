@@ -297,7 +297,7 @@ router.get('/:id/teaching', async (req, res) => {
 
 // Create Course
 router.post('/create', async (req, res) => {
-  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays, tags } = req.body;
+  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays, level, tags } = req.body;
   if (!imageURL)
   {
     imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
@@ -319,6 +319,7 @@ router.post('/create', async (req, res) => {
       startDate,
       duration,
       accessibleDays,
+      level,
       'pending',
       tagsArray,
       false

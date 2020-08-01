@@ -78,8 +78,9 @@ router.get("/", async (req, res) => {
       let user = await User.findOne({ email });
       if (user) {
         res.json(user);
+      } else {
+        res.json({ error: "User not found "});
       }
-      res.json({ error: "User not found "});
     } else {
       let list = await User.find();
       res.json(list);

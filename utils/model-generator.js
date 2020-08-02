@@ -60,6 +60,7 @@ module.exports = {
     duration,
     accessibleDays,
     level,
+    views,
     status,
     tags,
     isDelete
@@ -76,6 +77,7 @@ module.exports = {
       duration: duration,
       accessibleDays: accessibleDays,
       level: level,
+      views: views,
       status: status,
       tags: tags,
       isDelete: isDelete
@@ -369,6 +371,7 @@ module.exports = {
       duration: course.duration,
       accessibleDays: course.accessibleDays,
       level: course.level,
+      views: course.views,
       status: course.status,
       tags: course.tags,
       isDelete: course.isDelete

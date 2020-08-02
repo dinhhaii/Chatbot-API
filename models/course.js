@@ -36,6 +36,10 @@ const courseSchema = mongoose.Schema({
     type: Number,
     require: true
   },
+  views: {
+    type: Number,
+    require: true
+  },
   status: {
     type: String,
     require: false

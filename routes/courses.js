@@ -69,6 +69,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Courses suggestion
 router.post('/suggestion', async (req, res) => {
   let { searchHistory, _idUser } = req.body;
   searchHistory = JSON.parse(searchHistory).slice(0,3);
@@ -141,11 +142,81 @@ router.post('/suggestion', async (req, res) => {
         ...pipelines
       ]);
       courses = [...result];
-      return res.json(result.slice(0, 5));
+    }
+    res.json(courses.slice(0, 5));
+
+  } catch(e) {
+    console.log(e);
+    return res.json({ error: e.message });
+  }
+});
+
+// Courses suggestion from another course id
+router.get('/suggestion/:idCourse', async (req, res) => {
+  let { idCourse } = req.params;
+
+  const pipelines = [
+    { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+    { $lookup: { from: 'lessons', localField: '_id', foreignField: '_idCourse', as: 'lessons' }},
+    { $lookup: { from: 'discounts', localField: '_id', foreignField: '_idCourse', as: 'discount' }},
+    { $lookup: { from: 'users', localField: '_idLecturer', foreignField: '_id', as: 'lecturer' }},
+    { $lookup: { from: 'subjects', localField: '_idSubject', foreignField: '_id', as: 'subject' }},
+    { $unwind: '$lecturer' },
+    { $unwind: '$subject' },
+    { $skip: 0 },
+    { $limit: 10 }
+  ]
+
+  try {
+    const course = await Course.findById(idCourse);
+
+    let courses = [];
+
+    if (course && course.tags.length !== 0) {
+      for (let tag of course.tags)
+      {
+        const result = await Course.aggregate([
+          { $match: { $text: { $search: tag }, isDelete: false }},
+          { $sort: { score: { $meta: "textScore" }}},
+          ...pipelines
+        ])
+        if (result.length !== 0) {
+          courses = [...courses, ...result];
+        }
+      }
+
+      const result = await Course.aggregate([
+        { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+        ...pipelines
+      ])
+      if (result.length !== 0) {
+        courses = [...result];
+      }
+    }
+
+    if (courses.length === 0) {
+      const result = await Course.aggregate([
+        { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+        ...pipelines
+      ]);
+      courses = [...result];
+    }
+
+    var finalResult = courses.filter(c => {
+      var stringId = JSON.stringify(c['_id']).replace('"', '');
+      stringId = stringId.replace(/.$/, '');
+
+      return stringId !== idCourse;
+      });
+    finalResult = finalResult.filter(c => c.level >= course.level);
+
+    if (finalResult.length === 0) {
+      res.json(courses.slice(0, 5)); // if suggested courses aren't in the same subject or level
     }
     else {
-      res.json(courses.slice(0, 5));
+      res.json(finalResult.slice(0, 5)); // final filtered courses
     }
+
   } catch(e) {
     console.log(e);
     return res.json({ error: e.message });
@@ -208,7 +279,11 @@ router.get('/:id', async (req, res) => {
           feedback: feedback
         }
 
-        res.json(result);
+        course['views'] += 1;
+        course
+          .save()
+          .then(result => res.json(result))
+          .catch (err => console.log(err));
       } else {
         res.json(null);
       }
@@ -297,7 +372,7 @@ router.get('/:id/teaching', async (req, res) => {
 
 // Create Course
 router.post('/create', async (req, res) => {
-  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays, level, tags } = req.body;
+  let { _idLecturer, _idSubject, name, imageURL, description, price, startDate, duration, accessibleDays, level, views, tags } = req.body;
   if (!imageURL)
   {
     imageURL = `${req.protocol}://${req.get("host")}/images/no-avatar.png`;
@@ -320,6 +395,7 @@ router.post('/create', async (req, res) => {
       duration,
       accessibleDays,
       level,
+      0,
       'pending',
       tagsArray,
       false

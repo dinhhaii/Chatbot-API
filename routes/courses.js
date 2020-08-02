@@ -223,6 +223,54 @@ router.get('/suggestion/:idCourse', async (req, res) => {
   }
 });
 
+// Courses with descending views
+router.get('/suggestion/views/:idCourse', async (req, res) => {
+  let { idCourse } = req.params;
+
+  const pipelines = [
+    { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+    { $lookup: { from: 'lessons', localField: '_id', foreignField: '_idCourse', as: 'lessons' }},
+    { $lookup: { from: 'discounts', localField: '_id', foreignField: '_idCourse', as: 'discount' }},
+    { $lookup: { from: 'users', localField: '_idLecturer', foreignField: '_id', as: 'lecturer' }},
+    { $lookup: { from: 'subjects', localField: '_idSubject', foreignField: '_id', as: 'subject' }},
+    { $unwind: '$lecturer' },
+    { $unwind: '$subject' },
+    { $skip: 0 },
+    { $limit: 10 }
+  ]
+
+  try {
+    const course = await Course.findById(idCourse);
+
+    let courses = [];
+
+    const result = await Course.aggregate([
+      { $match: { _idSubject: mongoose.Types.ObjectId(course._idSubject), isDelete: false }},
+      { $sort: { views: -1 }},
+      ...pipelines
+    ]);
+    courses = [...result];
+
+    var finalResult = courses.filter(c => {
+      var stringId = JSON.stringify(c['_id']).replace('"', '');
+      stringId = stringId.replace(/.$/, '');
+
+      return stringId !== idCourse;
+      });
+
+    if (finalResult.length === 0) {
+      res.json(courses.slice(0, 5)); // if suggested courses aren't in the same subject or level
+    }
+    else {
+      res.json(finalResult.slice(0, 5)); // final filtered courses
+    }
+
+  } catch(e) {
+    console.log(e);
+    return res.json({ error: e.message });
+  }
+});
+
 // Get Pending Courses
 router.get('/pending', async (req, res) => {
   try {

@@ -103,7 +103,7 @@ router.post('/suggestion', async (req, res) => {
     }
 
     const cart = await Cart.findOne({ _idUser });
-    if (cart.items.length !== 0 && courses.length === 0) {
+    if (cart && cart.items.length !== 0 && courses.length === 0) {
       for(let item of cart.items) {
         const { _idCourse } = item;
         const course = await Course.findById(_idCourse);
@@ -308,35 +308,26 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    let course = await Course.findById(id);
+    const pipelines = [
+      { $match: { _id: mongoose.Types.ObjectId(id) }},
+      { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+      { $lookup: { from: 'lessons', localField: '_id', foreignField: '_idCourse', as: 'lessons' }},
+      { $lookup: { from: 'discounts', localField: '_id', foreignField: '_idCourse', as: 'discount' }},
+      { $lookup: { from: 'users', localField: '_idLecturer', foreignField: '_id', as: 'lecturer' }},
+      { $lookup: { from: 'subjects', localField: '_idSubject', foreignField: '_id', as: 'subject' }},
+      { $unwind: '$lecturer' },
+      { $unwind: '$subject' }
+    ]
 
-    if (course) {
-      let lessons = await Lesson.find({_idCourse: id});
-      let feedback = await Feedback.find({_idCourse: id});
-      let lecturer = await User.findById(course._idLecturer);
-      let subject = await Subject.findById(course._idSubject);
-      let discount = await Discount.find({_idCourse: id});
+    const result = await Course.aggregate(pipelines);
+    const course = await Course.findById(id);
 
-      if (lessons) {
-        let result = {
-          ...course._doc,
-          subject: subject,
-          lecturer: lecturer,
-          discount: discount,
-          lessons: lessons,
-          feedback: feedback
-        }
-
-        course['views'] += 1;
-        course
-          .save()
-          .then(result => res.json(result))
-          .catch (err => console.log(err));
-      } else {
-        res.json(null);
-      }
+    if (course && result.length === 1) {
+      course.views += 1;
+      await course.save();
+      return res.json(result[0]);
     } else {
-      res.json(null);
+      res.json({ error: 'Course not found.' });
     }
   } catch (e) {
     console.log(e);

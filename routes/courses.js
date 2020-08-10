@@ -151,6 +151,32 @@ router.post('/suggestion', async (req, res) => {
   }
 });
 
+// Course review 
+router.get('/review/:idCourse', async (req, res) => {
+  let { idCourse } = req.params;
+  try {
+    const data = await Course.aggregate([
+      { $match: { _id: mongoose.Types.ObjectId(idCourse) } },
+      { $lookup: { from: 'invoices', localField: '_id', foreignField: '_idCourse', as: 'invoices' }},
+      { $lookup: { from: 'feedbacks', localField: '_id', foreignField: '_idCourse', as: 'feedback' }},
+    ]);
+
+    if (data.length !== 0) {
+      const course = data[0];
+      const totalRate = course.feedback.reduce((initVal, val) => initVal + val.rate, 0);
+      const rate = (totalRate / course.feedback.length).toFixed(1);
+      const registered = course.invoices.length;
+
+      return res.json({ rate, registered, viewed: course.views, name: course.name });
+    } else {
+      return res.json({ error: "Course not found." });
+    }
+  } catch(e) {
+    console.log(e);
+    res.json({ error: e.message });
+  }
+});
+
 // Courses suggestion from another course id
 router.get('/suggestion/:idCourse', async (req, res) => {
   let { idCourse } = req.params;

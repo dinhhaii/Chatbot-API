@@ -9,7 +9,7 @@ module.exports = {
     USERNAME_EMAIL: 'dhtc.kltn@gmail.com',
     PASSWORD_EMAIL: 'HaiTom!1',
     EMAIL_SECRET: "email_secret",
-    PAGE_ACCESS_TOKEN: "EAAEJXbRQ95wBALO2qEnFrMca1bMKrOZA4HG6lz7BZAAdx6na4qLJzRREqZBjBny0edBnNstaAulcXvok60Om2d5mVedL0g1Yb6LPeXMeZBh10XZCsXq6qpRVor6Kand28cWNpD5RgbniryR5fgSiREjBjRuBXU2Naq9aAucd8tehOpG5T6h3x",
+    PAGE_ACCESS_TOKEN: "EAAEJXbRQ95wBAMRM22Oz9wDNVHVhZBLSolyhIvJFfRwcxb7BuZC0lxZBk1CuclLQzJSGw7DLKpCCHZB4FnaC7HpNzDqgXjTR7ehLfB2QN5GAdwLdHLmpgHR6fXGDqR0YenTzpsK2PXRcv1U0ZANwQyVdNc4Hz4ImhDfSCZCaSWIrDPR5vjcDn1",
     PLATFORM_FACEBOOK_URL: "https://graph.facebook.com/v7.0",
     // URL: "http://localhost:3000",
     // URL_CLIENT: "https://localhost:3001",

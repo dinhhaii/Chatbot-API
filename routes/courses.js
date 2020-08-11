@@ -13,6 +13,7 @@ let Discount = require('../models/discount');
 let Comment = require('../models/comment');
 let Timer = require('../models/timer');
 let Cart = require('../models/cart');
+const { default: Axios } = require('axios');
 
 // Get All Courses
 router.post('/', async (req, res) => {
@@ -166,8 +167,21 @@ router.get('/review/:idCourse', async (req, res) => {
       const totalRate = course.feedback.reduce((initVal, val) => initVal + val.rate, 0);
       const rate = (totalRate / course.feedback.length).toFixed(1);
       const registered = course.invoices.length;
+      
+      const sentiments = [];
+      for (let item of course.feedback) {
+        const { data } = await Axios.post(`${constant.URL_CHATBOT}/nlp/sentiment-analysis`, { review: item.content });
+        sentiments.push(data.analysis);
+      }
+      const sentiment = sentiments.reduce((initVal, val) => parseFloat(val) + initVal, 0) / sentiments.length;
 
-      return res.json({ rate, registered, viewed: course.views, name: course.name });
+      return res.json({
+        rate,
+        registered,
+        sentiment: sentiment.toFixed(2) || 0,
+        viewed: course.views,
+        name: course.name,
+      });
     } else {
       return res.json({ error: "Course not found." });
     }

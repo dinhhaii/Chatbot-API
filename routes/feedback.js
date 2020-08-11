@@ -5,6 +5,7 @@ const constant = require('../utils/constant');
 let Course = require('../models/course');
 let User = require('../models/user');
 let Feedback = require('../models/feedback');
+const feedback = require('../models/feedback');
 
 // Get All Feedbacks
 router.get('/', async (req, res) => {
@@ -39,7 +40,6 @@ router.get('/', async (req, res) => {
 router.get('/update-all', async (req, res) => {
   try {
     const feedbacks = await Feedback.find();
-
     const listTemp = {
       compliment: [
         "I love this course, couldn't be better!",
@@ -78,24 +78,29 @@ router.get('/update-all', async (req, res) => {
         "Not recommended, I've tried and kinda disappointed about the way the lecturer transfer his knowledge!"
       ],
     }
-
-    if (feedbacks)
+    if (feedbacks.length !== 0)
     {
-      for (let feedback in feedbacks)
-      {
-        var random = Math.floor(Math.random() * 16);
-        if (feedback.rate < 3) {
-          Feedback.updateOne({"_id": feedback["_id"]}, {"$set": {"content": listTemp.complaint[random]}}, function(err, res) {
-            if (err) throw err;
-          });
-        }
-        else {
-          Feedback.updateOne({"_id": feedback["_id"]}, {"$set": {"content": listTemp.compliment[random]}}, function(err, res) {
-            if (err) throw err;
-          });
-        }
-      }
-      res.json(feedbacks);
+      feedbacks.forEach((feedback, index) => {
+          var random = Math.floor(Math.random() * 16);
+          if (feedback.rate <= 3) {
+            Feedback.updateOne(
+              { _id: feedback._id },
+              { $set: { content: listTemp.complaint[random] } },
+              (err) => { if (err) console.log(err) }
+            );
+          }
+          else {
+            Feedback.updateOne(
+              { _id: feedback._id },
+              { $set: { content: listTemp.compliment[random] } },
+              (err) => {
+                if (err) console.log(err);
+              }
+            );
+          }
+      })
+      const result = await Feedback.find();
+      res.json(result);
     } else {
       res.json(null);
     }
